@@ -27,6 +27,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты"
+        ordering = ['name']
 
 
 # Модель 3: Рецепт (основная сущность)
@@ -42,12 +43,13 @@ class Recipe(models.Model):
     description = models.TextField(verbose_name="Краткое описание")
     instructions = models.TextField(verbose_name="Инструкция по приготовлению")
     cooking_time = models.PositiveIntegerField(verbose_name="Время приготовления (мин)")
+    servings = models.PositiveIntegerField(default=1, verbose_name="Количество порций")
     meal_type = models.CharField(max_length=10, choices=MEAL_TYPE_CHOICES, verbose_name="Тип приема пищи")
     
     # Связь "многие-ко-многим" с диетами
     diets = models.ManyToManyField(Diet, related_name="recipes", verbose_name="Подходящие диеты")
     
-    # Связь "многие-ко-многим" с ингредиентами через нашу кастомную модель
+    # Связь "многие-ко-многим" с ингредиентами через кастомную модель
     ingredients = models.ManyToManyField(Ingredient, through='RecipeIngredient', related_name="recipes", verbose_name="Ингредиенты")
     
     image = models.ImageField(upload_to='recipe_images/', blank=True, null=True, verbose_name="Изображение")
@@ -60,11 +62,15 @@ class Recipe(models.Model):
         verbose_name_plural = "Рецепты"
 
 # Модель 4: Связующая таблица для Рецептов и Ингредиентов
-# Она нужна, чтобы указать КОЛИЧЕСТВО каждого ингредиента в рецепте
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент")
-    weight_grams = models.PositiveIntegerField(verbose_name="Вес (в граммах)")
+    # Скрытое от пользователей поле веса (для расчетов КБЖУ).
+    weight_grams = models.PositiveIntegerField(verbose_name="Вес для расчетов (в граммах)")
+
+    # Поля для для отображения в списке ингредиентов
+    display_amount = models.CharField(max_length=50, verbose_name="Количество (отображаемое)") 
+    display_unit = models.CharField(max_length=50, verbose_name="Единица изм. (отображаемая)")
 
     def __str__(self):
         return f"{self.recipe.name} - {self.ingredient.name} ({self.weight_grams}г)"
