@@ -14,3 +14,7 @@ db.sqlite3
 
 # VS Code
 .vscode/
+
+# User-uploaded files
+/media/
+/recipe_images/
