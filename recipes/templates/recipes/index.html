@@ -46,6 +46,41 @@
 
                 <button type="submit">Сгенерировать меню!</button>
             </form>
+            <!-- ===== БЛОК С РЕЗУЛЬТАТАМИ ===== -->
+            {% if meal_plan %}
+            <hr>
+            <section id="meal-plan-results">
+                <h2>Ваш план питания на день</h2>
+
+                <!-- Завтрак -->
+                {% if meal_plan.breakfast %}
+                <article>
+                    <header><strong>Завтрак</strong></header>
+                    <p>{{ meal_plan.breakfast.name }}</p>
+                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                </article>
+                {% endif %}
+    
+                <!-- Обед -->
+                {% if meal_plan.lunch %}
+                <article>
+                    <header><strong>Обед</strong></header>
+                    <p>{{ meal_plan.lunch.name }}</p>
+                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                </article>
+                {% endif %}
+
+                <!-- Ужин -->
+                {% if meal_plan.dinner %}
+                <article>
+                    <header><strong>Ужин</strong></header>
+                    <p>{{ meal_plan.dinner.name }}</p>
+                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                </article>
+                {% endif %}
+            </section>
+            {% endif %}
+            <!-- ===== КОНЕЦ БЛОКА С РЕЗУЛЬТАТАМИ ===== -->
         </section>
     </main>
 </body>
