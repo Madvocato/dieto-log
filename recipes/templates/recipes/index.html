@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dieto.log - Умный генератор меню</title>
+    <!-- Подключаем Pico.css для быстрой и красивой стилизации -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+</head>
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <li><strong>Dieto.log</strong></li>
+            </ul>
+            <ul>
+                <li><a href="#">Все рецепты</a></li>
+            </ul>
+        </nav>
+
+        <section>
+            <hgroup>
+                <h1>Ваш персональный диетолог</h1>
+                <h2>Сгенерируйте сбалансированное меню на день за 5 секунд</h2>
+            </hgroup>
+            
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="grid">
+                    <!-- Выпадающий список с диетами -->
+                    <label for="diet">
+                        Выберите диету
+                        <select id="diet" name="diet" required>
+                            {% for diet in diets %}
+                                <option value="{{ diet.id }}">{{ diet.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    
+                    <!-- Поле для ввода калорий -->
+                    <label for="calories">
+                        Целевая калорийность (ккал)
+                        <input type="number" id="calories" name="calories" placeholder="Например, 1800" required>
+                    </label>
+                </div>
+
+                <button type="submit">Сгенерировать меню!</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

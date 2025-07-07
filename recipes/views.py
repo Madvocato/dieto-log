@@ -1,3 +1,11 @@
 from django.shortcuts import render
+from .models import Diet
 
-# Create your views here.
+def index(request):
+    diets = Diet.objects.all()
+
+    context = {
+        'diets': diets,
+    }
+
+    return render(request, 'recipes/index.html', context)
