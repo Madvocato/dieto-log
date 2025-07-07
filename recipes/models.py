@@ -5,12 +5,32 @@ class Diet(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название диеты")
     description = models.TextField(blank=True, verbose_name="Описание")
 
+    default_calories = models.PositiveIntegerField(default=2000, verbose_name="Калории по умолчанию")
+    
+    # Граничные условия БЖУ
+    protein_per_1000_kcal = models.PositiveIntegerField(default=45, verbose_name="Белки (г на 1000 ккал)")
+    fat_per_1000_kcal = models.PositiveIntegerField(default=40, verbose_name="Жиры (г на 1000 ккал)")
+    carb_per_1000_kcal = models.PositiveIntegerField(default=110, verbose_name="Углеводы (г на 1000 ккал)")
+    
+    # Ограничение на углеводы
+    CARB_CONSTRAINT_CHOICES = [
+        ('AT_LEAST', 'Не менее'),
+        ('AT_MOST', 'Не более'),
+    ]
+    carbs_constraint = models.CharField(
+        max_length=10, 
+        choices=CARB_CONSTRAINT_CHOICES,
+        default='AT_LEAST',
+        verbose_name="Ограничение на углеводы"
+    )
+
     def __str__(self):
         return self.name
 
     class Meta:
         verbose_name = "Диета"
         verbose_name_plural = "Диеты"
+        ordering = ['id']
 
 
 # Модель 2: Ингредиент (с его КБЖУ на 100г)

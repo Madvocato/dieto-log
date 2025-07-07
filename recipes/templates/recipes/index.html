@@ -40,12 +40,27 @@
                     <!-- Поле для ввода калорий -->
                     <label for="calories">
                         Целевая калорийность (ккал)
-                        <input type="number" id="calories" name="calories" placeholder="Например, 1800" required>
+                        <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
                     </label>
                 </div>
 
                 <button type="submit">Сгенерировать меню!</button>
             </form>
+
+            {% if nutrition_targets %}
+            <div class="nutrition-targets" style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
+                <hgroup>
+                    <h4>Ваши рекомендуемые цели на день</h4>
+                    <h6>На основе выбранной диеты и калорийности</h6>
+                </hgroup>
+                <ul>
+                    <li>Белки: не менее {{ nutrition_targets.proteins }} г</li>
+                    <li>Жиры: не менее {{ nutrition_targets.fats }} г</li>
+                    <li>Углеводы: {{ nutrition_targets.carb_constraint_text }} {{ nutrition_targets.carbs }} г</li>
+                </ul>
+            </div>
+            {% endif %}
+
             <!-- ===== БЛОК С РЕЗУЛЬТАТАМИ ===== -->
             {% if meal_plan %}
             <hr>
