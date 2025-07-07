@@ -55,8 +55,12 @@
                 <!-- Завтрак -->
                 {% if meal_plan.breakfast %}
                 <article>
-                    <header><strong>Завтрак</strong></header>
-                    <p>{{ meal_plan.breakfast.name }}</p>
+                    <header>
+                        <strong>Завтрак</strong>
+                        <!-- Калорийность на порцию -->
+                        <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving }} ккал</small>
+                    </header>
+                    <p>{{ meal_plan.breakfast.recipe.name }}</p>
                     <footer><a href="#">Посмотреть рецепт</a></footer>
                 </article>
                 {% endif %}
@@ -64,8 +68,11 @@
                 <!-- Обед -->
                 {% if meal_plan.lunch %}
                 <article>
-                    <header><strong>Обед</strong></header>
-                    <p>{{ meal_plan.lunch.name }}</p>
+                    <header>
+                        <strong>Обед</strong>
+                        <small>~{{ meal_plan.lunch.nutrition.calories_per_serving }} ккал</small>
+                    </header>
+                    <p>{{ meal_plan.lunch.recipe.name }}</p>
                     <footer><a href="#">Посмотреть рецепт</a></footer>
                 </article>
                 {% endif %}
@@ -73,8 +80,11 @@
                 <!-- Ужин -->
                 {% if meal_plan.dinner %}
                 <article>
-                    <header><strong>Ужин</strong></header>
-                    <p>{{ meal_plan.dinner.name }}</p>
+                    <header>
+                        <strong>Ужин</strong>
+                        <small>~{{ meal_plan.dinner.nutrition.calories_per_serving }} ккал</small>
+                    </header>
+                    <p>{{ meal_plan.dinner.recipe.name }}</p>
                     <footer><a href="#">Посмотреть рецепт</a></footer>
                 </article>
                 {% endif %}
