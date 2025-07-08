@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Diet, Recipe
 from .utils import calculate_recipe_nutrition
 from .generator import find_best_meal_plan
+from decimal import Decimal
 
 def index(request):
     diets = Diet.objects.all()
@@ -32,7 +33,7 @@ def index(request):
 
     if request.method == 'POST' and selected_diet:
         # Рассчитываем целевые пороги БЖУ
-        calories_factor = calories_value / 1000.0
+        calories_factor = Decimal(calories_value) / Decimal(1000.0)
         nutrition_targets = {
             'proteins': round(selected_diet.protein_per_1000_kcal * calories_factor),
             'fats': round(selected_diet.fat_per_1000_kcal * calories_factor),

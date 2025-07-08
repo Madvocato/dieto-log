@@ -1,12 +1,21 @@
 # recipes/generator.py
 import random
+from decimal import Decimal
 from .utils import calculate_recipe_nutrition
+
+IDEAL_MEAL_DISTRIBUTION = {
+    'BREAKFAST': Decimal('0.30'),
+    'LUNCH': Decimal('0.40'),
+    'DINNER': Decimal('0.30'),
+}
 
 def find_best_meal_plan(possible_recipes, target_calories, nutrition_targets):
     """
     Подбирает наилучший план питания из возможных рецептов.
     Использует случайный поиск с итерациями для нахождения оптимальной комбинации.
     """
+
+    target_calories_decimal = Decimal(target_calories)
     
     breakfasts = []
     lunches = []
@@ -66,8 +75,26 @@ def find_best_meal_plan(possible_recipes, target_calories, nutrition_targets):
             continue
 
         # Если комбинация валидна, считаем ее "штраф"
-        # Чем ближе к цели по калориям, тем лучше.
-        score = (current_calories - target_calories) ** 2
+        ideal_breakfast_calories = target_calories_decimal * IDEAL_MEAL_DISTRIBUTION['BREAKFAST']
+        ideal_lunch_calories = target_calories_decimal * IDEAL_MEAL_DISTRIBUTION['LUNCH']
+        ideal_dinner_calories = target_calories_decimal * IDEAL_MEAL_DISTRIBUTION['DINNER']
+
+        # 5.2. Считаем отклонения для каждого приема пищи
+        breakfast_deviation = (b_choice['nutrition']['calories_per_serving'] - ideal_breakfast_calories) ** 2
+        lunch_deviation = (l_choice['nutrition']['calories_per_serving'] - ideal_lunch_calories) ** 2
+        dinner_deviation = (d_choice['nutrition']['calories_per_serving'] - ideal_dinner_calories) ** 2
+
+        # 5.3. Считаем отклонение по общей калорийности (остается главным)
+        total_calories_deviation = (current_calories - target_calories_decimal) ** 2
+
+        # 5.4. Складываем все штрафы вместе. 
+        # Мы можем дать разный "вес" каждому штрафу. Штраф за общую калорийность важнее,
+        # поэтому его коэффициент будет выше.
+        # Например, вес 1.0 для общего, и 0.5 для каждого приема пищи.
+        score = (total_calories_deviation * Decimal('1.0')) + \
+        (breakfast_deviation * Decimal('0.5')) + \
+        (lunch_deviation * Decimal('0.5')) + \
+        (dinner_deviation * Decimal('0.5'))
         
         if score < best_score:
             best_score = score
@@ -76,6 +103,19 @@ def find_best_meal_plan(possible_recipes, target_calories, nutrition_targets):
                 'lunch': l_choice,
                 'dinner': d_choice,
             }
+
+    # Проверка на адекватность лучшей найденной комбинации
+    if best_combination:
+        final_calories = best_combination['breakfast']['nutrition']['calories_per_serving'] + \
+                         best_combination['lunch']['nutrition']['calories_per_serving'] + \
+                         best_combination['dinner']['nutrition']['calories_per_serving']
+        
+        # Считаем отклонение от цели в процентах
+        deviation_percent = abs(final_calories - target_calories_decimal) / target_calories_decimal
+        
+        # Если отклонение больше порога 15%, то результат неадекватный
+        if deviation_percent > 0.15: 
+            return None
     
     # Возвращает лучшую найденную комбинацию (может быть None)
     return best_combination
