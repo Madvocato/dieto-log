@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Diet, Recipe
 import random
 from .utils import calculate_recipe_nutrition
@@ -82,3 +82,18 @@ def index(request):
         context['meal_plan'] = meal_plan
 
     return render(request, 'recipes/index.html', context)
+
+def recipe_detail(request, recipe_id):
+    # get_object_or_404 - удобная функция Django.
+    # Она пытается найти объект, и если не находит - автоматически показывает страницу 404.
+    recipe = get_object_or_404(Recipe, pk=recipe_id)
+    
+    # Используем наш уже готовый калькулятор для этого рецепта
+    nutrition = calculate_recipe_nutrition(recipe)
+    
+    context = {
+        'recipe': recipe,
+        'nutrition': nutrition,
+    }
+    
+    return render(request, 'recipes/recipe_detail.html', context)

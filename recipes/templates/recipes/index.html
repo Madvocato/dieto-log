@@ -76,7 +76,9 @@
                         <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving }} ккал</small>
                     </header>
                     <p>{{ meal_plan.breakfast.recipe.name }}</p>
-                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                    <footer>
+                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.breakfast.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                    </footer>
                 </article>
                 {% endif %}
     
@@ -88,7 +90,9 @@
                         <small>~{{ meal_plan.lunch.nutrition.calories_per_serving }} ккал</small>
                     </header>
                     <p>{{ meal_plan.lunch.recipe.name }}</p>
-                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                    <footer>
+                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.lunch.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                    </footer>
                 </article>
                 {% endif %}
 
@@ -100,7 +104,9 @@
                         <small>~{{ meal_plan.dinner.nutrition.calories_per_serving }} ккал</small>
                     </header>
                     <p>{{ meal_plan.dinner.recipe.name }}</p>
-                    <footer><a href="#">Посмотреть рецепт</a></footer>
+                    <footer>
+                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.dinner.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                    </footer>
                 </article>
                 {% endif %}
             </section>
