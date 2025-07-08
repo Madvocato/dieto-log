@@ -1,99 +1,78 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Diet, Recipe
-import random
 from .utils import calculate_recipe_nutrition
+from .generator import find_best_meal_plan
 
 def index(request):
     diets = Diet.objects.all()
-
-    selected_diet = None
-    calories_value = 2000 # Задаем глобальный дефолт
+    
+    # --- ЭТАП 1: ОПРЕДЕЛЕНИЕ ВХОДНЫХ ПАРАМЕТРОВ ---
 
     if request.method == 'POST':
-        # Получаем данные из формы
-        diet_id = request.POST.get('diet')
-        target_calories = int(request.POST.get('calories'))
-        
-        if diet_id:
+        # Если форма отправлена, берем данные из нее
+        try:
+            diet_id = int(request.POST.get('diet'))
+            calories_value = int(request.POST.get('calories'))
             selected_diet = Diet.objects.get(id=diet_id)
-        if target_calories:
-            target_calories = int(target_calories)
-
-        elif diets.exists():
+        except (ValueError, TypeError, Diet.DoesNotExist):
+            # Если данные кривые, сбрасываем на дефолт
             selected_diet = diets.first()
-            target_calories = selected_diet.default_calories
-            
+            calories_value = selected_diet.default_calories if selected_diet else 2000
+    else:
+        # Если страница загружается первый раз (GET), берем дефолтные значения
+        selected_diet = diets.first()
+        calories_value = selected_diet.default_calories if selected_diet else 2000
+
+    # --- ЭТАП 2: ВЫЧИСЛЕНИЯ И ГЕНЕРАЦИЯ (ТОЛЬКО ДЛЯ POST) ---
+
+    # Инициализируем переменные, которые могут не создаться
+    nutrition_targets = None
+    meal_plan = None
+    error_message = None
+
+    if request.method == 'POST' and selected_diet:
+        # Рассчитываем целевые пороги БЖУ
+        calories_factor = calories_value / 1000.0
+        nutrition_targets = {
+            'proteins': round(selected_diet.protein_per_1000_kcal * calories_factor),
+            'fats': round(selected_diet.fat_per_1000_kcal * calories_factor),
+            'carbs': round(selected_diet.carb_per_1000_kcal * calories_factor),
+            'carb_constraint_type': selected_diet.carbs_constraint,
+            'carb_constraint_text': selected_diet.get_carbs_constraint_display()
+        }
+        
+        # Вызываем "умный" генератор
+        possible_recipes = Recipe.objects.filter(diets=selected_diet)
+        # Убираем 'carb_constraint_text' перед передачей в генератор, ему это не нужно
+        targets_for_generator = nutrition_targets.copy()
+        targets_for_generator.pop('carb_constraint_text')
+        
+        meal_plan = find_best_meal_plan(possible_recipes, calories_value, targets_for_generator)
+        
+        # Обрабатываем результат генератора
+        if meal_plan is None:
+            error_message = "К сожалению, не удалось составить меню. Попробуйте изменить калорийность или добавить больше рецептов для этой диеты."
+
+    # --- ЭТАП 3: ФОРМИРОВАНИЕ КОНТЕКСТА И ОТПРАВКА ---
+
     context = {
         'diets': diets,
-        'selected_diet': selected_diet,
+        'selected_diet_id': selected_diet.id if selected_diet else None, # <--- ВОТ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ!
         'calories_value': calories_value,
-        'meal_plan': None,
-        'nutrition_targets': None,
+        'meal_plan': meal_plan,
+        'nutrition_targets': nutrition_targets,
+        'error_message': error_message,
     }
-
-    if selected_diet and request.method == 'POST':
-        # --- РАСЧЕТ ЦЕЛЕВЫХ ПОРОГОВ БЖУ ---
-        calories_factor = target_calories / 1000.0
-            
-        min_proteins = round(selected_diet.protein_per_1000_kcal * calories_factor)
-        min_fats = round(selected_diet.fat_per_1000_kcal * calories_factor)
-        carb_threshold = round(selected_diet.carb_per_1000_kcal * calories_factor)
-            
-        # Добавляем рассчитанные пороги в контекст для отображения
-        context['nutrition_targets'] = {
-            'proteins': min_proteins,
-            'fats': min_fats,
-            'carbs': carb_threshold,
-            'carb_constraint_text': selected_diet.get_carbs_constraint_display(),
-            'carb_constraint_type': selected_diet.carbs_constraint
-        }
-        # --- АЛГОРИТМ (ПОКА ЧТО СЛУЧАЙНЫЙ) ---
-        
-        # Фильтрует рецепты по выбранной диете
-        possible_recipes = Recipe.objects.filter(diets=selected_diet)
-        breakfasts = possible_recipes.filter(meal_type='BREAKFAST')
-        lunches = possible_recipes.filter(meal_type='LUNCH')
-        dinners = possible_recipes.filter(meal_type='DINNER')
-
-        # Выбираем случайные рецепты и сразу обогащаем их данными о КБЖУ
-        meal_plan = {}
-            
-        breakfast_recipe = random.choice(list(breakfasts)) if breakfasts else None
-        if breakfast_recipe:
-            meal_plan['breakfast'] = {
-                'recipe': breakfast_recipe,
-                'nutrition': calculate_recipe_nutrition(breakfast_recipe)
-            }
-
-        lunch_recipe = random.choice(list(lunches)) if lunches else None
-        if lunch_recipe:
-            meal_plan['lunch'] = {
-                'recipe': lunch_recipe,
-                'nutrition': calculate_recipe_nutrition(lunch_recipe)
-            }
-
-        dinner_recipe = random.choice(list(dinners)) if dinners else None
-        if dinner_recipe:
-            meal_plan['dinner'] = {
-                'recipe': dinner_recipe,
-                'nutrition': calculate_recipe_nutrition(dinner_recipe)
-            }
-            
-        context['meal_plan'] = meal_plan
-
+    
     return render(request, 'recipes/index.html', context)
 
+
 def recipe_detail(request, recipe_id):
-    # get_object_or_404 - удобная функция Django.
-    # Она пытается найти объект, и если не находит - автоматически показывает страницу 404.
+    # Эта функция остается без изменений
     recipe = get_object_or_404(Recipe, pk=recipe_id)
-    
-    # Используем наш уже готовый калькулятор для этого рецепта
     nutrition = calculate_recipe_nutrition(recipe)
-    
     context = {
         'recipe': recipe,
         'nutrition': nutrition,
     }
-    
     return render(request, 'recipes/recipe_detail.html', context)

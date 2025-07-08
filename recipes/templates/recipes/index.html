@@ -32,7 +32,9 @@
                         Выберите диету
                         <select id="diet" name="diet" required>
                             {% for diet in diets %}
-                                <option value="{{ diet.id }}">{{ diet.name }}</option>
+                                <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
+                                    {{ diet.name }}
+                                </option>
                             {% endfor %}
                         </select>
                     </label>
@@ -46,6 +48,12 @@
 
                 <button type="submit">Сгенерировать меню!</button>
             </form>
+
+            {% if error_message %}
+                <article style="background-color: var(--pico-form-element-invalid-background-color); border-color: var(--pico-form-element-invalid-border-color);">
+                    {{ error_message }}
+                </article>
+            {% endif %} 
 
             {% if nutrition_targets %}
             <div class="nutrition-targets" style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
