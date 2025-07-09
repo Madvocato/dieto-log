@@ -1,0 +1,52 @@
+<!-- recipes/templates/recipe_list.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все рецепты - Dieto.log</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+</head>
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <li><a href="{% url 'recipes:index' %}"><strong>Dieto.log</strong></a></li>
+            </ul>
+            <ul>
+                <!-- Эта ссылка теперь активна -->
+                <li><a href="{% url 'recipes:recipe_list' %}">Все рецепты</a></li>
+            </ul>
+        </nav>
+
+        <hgroup>
+            <h1>Каталог рецептов</h1>
+            <h2>Найдите что-то вкусное и полезное</h2>
+        </hgroup>
+        
+        <!-- Используем grid для вывода рецептов в несколько колонок -->
+        <div class="card-grid">
+            {% for recipe in recipes %}
+                <article>
+                    {% if recipe.image %}
+                        <header>
+                            <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="height: 200px; width: 100%; object-fit: cover;">
+                        </header>
+                    {% endif %}
+                    <h5 style="margin-bottom: 0;">{{ recipe.name }}</h5>
+                    <small>Время: {{ recipe.cooking_time }} мин. | Порций: {{ recipe.servings }}</small>
+                    <p style="height: 4.5em; overflow: hidden;">{{ recipe.description }}</p>
+                    <footer>
+                        <a href="{% url 'recipes:recipe_detail' recipe_id=recipe.id %}" role="button">Подробнее</a>
+                    </footer>
+                </article>
+            {% empty %}
+                <p>Пока в базе нет ни одного рецепта.</p>
+            {% endfor %}
+        </div>
+
+    </main>
+</body>
+</html>

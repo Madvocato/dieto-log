@@ -77,3 +77,13 @@ def recipe_detail(request, recipe_id):
         'nutrition': nutrition,
     }
     return render(request, 'recipes/recipe_detail.html', context)
+
+def recipe_list(request):
+    # Просто получаем все рецепты из базы, отсортированные по имени
+    recipes = Recipe.objects.all().order_by('name')
+    
+    context = {
+        'recipes': recipes,
+    }
+    
+    return render(request, 'recipes/recipe_list.html', context)
