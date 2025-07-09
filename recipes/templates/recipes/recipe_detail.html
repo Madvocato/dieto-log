@@ -1,17 +1,27 @@
 {% extends "recipes/base.html" %}
+{% load static %}
 
 {% block title %}{{ recipe.name }} - Dieto.log{% endblock %}
 
 {% block content %}
 
     <article>
-        <header>
-            {% if recipe.image %}
-                <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="width:100%; height:auto; border-radius: var(--pico-border-radius);">
-            {% endif %}
-            <h1>{{ recipe.name }}</h1>
-            <p>{{ recipe.description }}</p>
-        </header>
+        <div class="recipe-header-grid">
+            <div>
+                {% if recipe.image %}
+                    <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="width:100%; height:auto; border-radius: var(--pico-border-radius);">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="Нет изображения" style="width:100%; height:auto; border-radius: var(--pico-border-radius);">
+                {% endif %}
+            </div>
+
+            <div>
+                <h1>{{ recipe.name }}</h1>
+                <p>{{ recipe.description }}</p>
+            </div>
+        </div>
+        
+        <hr>
 
         <div class="grid">
             <!-- Блок с ингредиентами -->

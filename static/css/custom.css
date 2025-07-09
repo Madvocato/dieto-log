@@ -28,3 +28,44 @@
 .nav-links a {
     margin-left: 1.5rem;
 }
+
+.catalog-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) auto; 
+    gap: 1rem;
+    align-items: end;
+}
+
+.catalog-filters-grid > select,
+.catalog-filters-grid > input,
+.catalog-filters-grid > button {
+    margin-bottom: 0;
+    height: 3rem;
+    padding: 0.75rem;
+}
+
+.recipe-header-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Две равные колонки */
+    gap: 2rem; /* Отступ между колонками */
+    align-items: center; /* Выравниваем содержимое по вертикали */
+    margin-bottom: 2rem; /* Отступ снизу от всего блока */
+}
+
+@media (max-width: 968px) {
+  
+  /* Перестраиваем грид фильтров в одну колонку */
+  .catalog-filters-grid {
+    grid-template-columns: 1fr; /* Теперь у нас одна колонка, занимающая всю ширину */
+    gap: 1rem; /* Можно увеличить вертикальный отступ */
+  }
+
+  /* (Опционально) Уменьшаем отступ у навигации на мобильных */
+   .main-nav {
+    margin-bottom: 1rem;
+  }
+
+  .recipe-header-grid {
+    grid-template-columns: 1fr; /* Одна колонка */
+  }
+}

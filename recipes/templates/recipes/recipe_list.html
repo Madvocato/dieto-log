@@ -1,4 +1,5 @@
 {% extends "recipes/base.html" %}
+{% load static %}
 
 {% block title %}Каталог рецептов - Dieto.log{% endblock %}
 
@@ -9,31 +10,38 @@
         <h2>Найдите что-то вкусное и полезное</h2>
     </hgroup>
         
-    <form method="GET" action="{% url 'recipes:recipe_list' %}" class="grid">
-    <!-- Фильтр по диете -->
-        <select name="diet">
-            <option value="">Все диеты</option>
-            {% for diet in diets %}
-                <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
-                    {{ diet.name }}
-                </option>
-            {% endfor %}
-        </select>
+    <form method="GET" action="{% url 'recipes:recipe_list' %}">
+        <div class="grid catalog-filters-grid">
+            <!-- Фильтр по диете -->
+            <select name="diet" title="Фильтр по диете">
+                <option value="">Все диеты</option>
+                {% for diet in diets %}
+                    <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
+                        {{ diet.name }}
+                    </option>
+                {% endfor %}
+            </select>
 
-        <!-- ФИЛЬТР ПО ТИПУ БЛЮДА -->
-        <select name="meal_type">
-            <option value="">Все приемы пищи</option>
-            {% for value, name in meal_types %}
-                <option value="{{ value }}" {% if value == selected_meal_type %}selected{% endif %}>
-                    {{ name }}
-                </option>
-            {% endfor %}
-        </select>
+            <!-- ФИЛЬТР ПО ТИПУ БЛЮДА -->
+            <select name="meal_type" title="Фильтр по приему пищи">
+                <option value="">Все приемы пищи</option>
+                {% for value, name in meal_types %}
+                    <option value="{{ value }}" {% if value == selected_meal_type %}selected{% endif %}>
+                        {{ name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="sort" title="Сортировка">
+                <option value="name" {% if current_sort == 'name' %}selected{% endif %}>По названию (А-Я)</option>
+                <option value="cooking_time" {% if current_sort == 'cooking_time' %}selected{% endif %}>По времени</option>
+            </select>
     
-        <!-- Поиск по тексту -->
-        <input type="text" name="q" placeholder="Поиск по названию или описанию..." value="{{ search_query|default:'' }}">
+            <!-- Поиск по тексту -->
+            <input type="text" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}" title="Поле для поиска">
     
-        <button type="submit">Найти</button>
+            <button type="submit">Применить</button>
+        </div>
     </form>
     <hr>
         
@@ -41,11 +49,13 @@
     <div class="card-grid">
         {% for recipe in recipes %}
             <article>
-                {% if recipe.image %}
-                    <header>
+                <header>
+                    {% if recipe.image %}
                         <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="height: 200px; width: 100%; object-fit: cover;">
-                    </header>
-                {% endif %}
+                    {% else %}
+                        <img src="{% static 'images/placeholder.png' %}" alt="Нет изображения" style="height: 200px; width: 100%; object-fit: cover;">
+                    {% endif %}
+                </header>
                 <h5 style="margin-bottom: 0;">{{ recipe.name }}</h5>
                 <small>Время: {{ recipe.cooking_time }} мин. | Порций: {{ recipe.servings }}</small>
                 <p style="height: 4.5em; overflow: hidden;">{{ recipe.description }}</p>

@@ -78,15 +78,16 @@ def recipe_detail(request, recipe_id):
     return render(request, 'recipes/recipe_detail.html', context)
 
 def recipe_list(request):
-    recipes = Recipe.objects.all().order_by('name')
+    recipes = Recipe.objects.all()
     diets = Diet.objects.all().order_by('name')
     meal_types = Recipe.MEAL_TYPE_CHOICES
 
     # --- ЛОГИКА ФИЛЬТРАЦИИ ---
-    # Получаем параметры из URL
     selected_diet_id = request.GET.get('diet')
     selected_meal_type = request.GET.get('meal_type')
     search_query = request.GET.get('q')
+
+    sort_by = request.GET.get('sort', 'name')
 
     # Фильтруем по диете, если она выбрана
     if selected_diet_id and selected_diet_id.isdigit():
@@ -103,6 +104,11 @@ def recipe_list(request):
             models.Q(ingredients__name__icontains=search_query)
         ).distinct()
 
+    if sort_by in ['name', 'cooking_time', 'servings']: # Проверка на допустимые значения
+        recipes = recipes.order_by(sort_by)
+    else:
+        recipes = recipes.order_by('name')
+
     context = {
         'recipes': recipes,
         'diets': diets,
@@ -111,6 +117,7 @@ def recipe_list(request):
         'selected_diet_id': int(selected_diet_id) if selected_diet_id and selected_diet_id.isdigit() else None,
         'selected_meal_type': selected_meal_type,
         'search_query': search_query,
+        'current_sort': sort_by,
     }
     
     return render(request, 'recipes/recipe_list.html', context)
