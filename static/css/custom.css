@@ -3,3 +3,28 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
 }
+
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    margin-bottom: 2rem;
+}
+
+.main-nav .nav-logo, 
+.main-nav .nav-links a {
+    text-decoration: none;
+    color: var(--pico-contrast);
+    font-weight: bold;
+}
+
+.main-nav .nav-logo:hover, 
+.main_nav .nav-links a:hover {
+    color: var(--pico-primary-hover);
+}
+
+.nav-links a {
+    margin-left: 1.5rem;
+}

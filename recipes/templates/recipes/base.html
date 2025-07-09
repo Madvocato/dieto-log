@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dieto.log{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+</head>
+<body>
+    <header class="container">
+        <nav class="main-nav">
+            <!-- Левая часть: Логотип -->
+            <a href="{% url 'recipes:index' %}" class="nav-logo"><strong>Dieto.log</strong></a>
+        
+            <!-- Правая часть: Ссылки -->
+            <div class="nav-links">
+                <a href="{% url 'recipes:recipe_list' %}">Все рецепты</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="container">
+        <small>Учебный проект, 2025</small>
+    </footer>
+</body>
+</html>

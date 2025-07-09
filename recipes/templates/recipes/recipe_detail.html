@@ -1,72 +1,56 @@
-<!-- recipes/templates/recipe_detail.html -->
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ recipe.name }} - Dieto.log</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-</head>
-<body>
-    <main class="container">
-        <nav>
-            <ul>
-                <li><a href="{% url 'recipes:index' %}"><strong>Dieto.log</strong></a></li>
-            </ul>
-            <ul>
-                <li><a href="#">Все рецепты</a></li>
-            </ul>
-        </nav>
+{% extends "recipes/base.html" %}
 
-        <article>
-            <header>
-                {% if recipe.image %}
-                    <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="width:100%; height:auto; border-radius: var(--pico-border-radius);">
-                {% endif %}
-                <h1>{{ recipe.name }}</h1>
-                <p>{{ recipe.description }}</p>
-            </header>
+{% block title %}{{ recipe.name }} - Dieto.log{% endblock %}
 
-            <div class="grid">
-                <!-- Блок с ингредиентами -->
-                <section>
-                    <h3>Ингредиенты (на {{ recipe.servings }} порц.)</h3>
-                    <ul>
-                        {% for item in recipe.recipeingredient_set.all %}
-                            <li>{{ item.ingredient.name }} - {{ item.display_amount }} {{ item.display_unit }}</li>
-                        {% endfor %}
-                    </ul>
-                </section>
+{% block content %}
 
-                <!-- Блок с КБЖУ -->
-                <section>
-                    <h3>Пищевая ценность (на 1 порцию)</h3>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>Калории</td>
-                                <td><strong>{{ nutrition.calories_per_serving }} ккал</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Белки</td>
-                                <td>{{ nutrition.proteins_per_serving }} г</td>
-                            </tr>
-                            <tr>
-                                <td>Жиры</td>
-                                <td>{{ nutrition.fats_per_serving }} г</td>
-                            </tr>
-                            <tr>
-                                <td>Углеводы</td>
-                                <td>{{ nutrition.carbs_per_serving }} г</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-            </div>
+    <article>
+        <header>
+            {% if recipe.image %}
+                <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="width:100%; height:auto; border-radius: var(--pico-border-radius);">
+            {% endif %}
+            <h1>{{ recipe.name }}</h1>
+            <p>{{ recipe.description }}</p>
+        </header>
 
-            <h3>Инструкция по приготовлению</h3>
-            <div>{{ recipe.instructions|linebreaksbr }}</div>
-        </article>
-    </main>
-</body>
-</html>
+        <div class="grid">
+            <!-- Блок с ингредиентами -->
+            <section>
+                <h3>Ингредиенты (на {{ recipe.servings }} порц.)</h3>
+                <ul>
+                    {% for item in recipe.recipeingredient_set.all %}
+                        <li>{{ item.ingredient.name }} - {{ item.display_amount }} {{ item.display_unit }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <!-- Блок с КБЖУ -->
+            <section>
+                <h3>Пищевая ценность (на 1 порцию)</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Калории</td>
+                            <td><strong>{{ nutrition.calories_per_serving }} ккал</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Белки</td>
+                            <td>{{ nutrition.proteins_per_serving }} г</td>
+                        </tr>
+                        <tr>
+                            <td>Жиры</td>
+                            <td>{{ nutrition.fats_per_serving }} г</td>
+                        </tr>
+                        <tr>
+                            <td>Углеводы</td>
+                            <td>{{ nutrition.carbs_per_serving }} г</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <h3>Инструкция по приготовлению</h3>
+        <div>{{ recipe.instructions|linebreaksbr }}</div>
+    </article>
+{% endblock %}

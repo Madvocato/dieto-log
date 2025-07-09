@@ -1,126 +1,109 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dieto.log - Умный генератор меню</title>
-    <!-- Подключаем Pico.css для быстрой и красивой стилизации -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-</head>
-<body>
-    <main class="container">
-        <nav>
-            <ul>
-                <li><strong>Dieto.log</strong></li>
-            </ul>
-            <ul>
-                <li><a href="{% url 'recipes:recipe_list' %}">Все рецепты</a></li>
-            </ul>
-        </nav>
+{% extends "recipes/base.html" %}
 
-        <section>
-            <hgroup>
-                <h1>Ваш персональный диетолог</h1>
-                <h2>Сгенерируйте сбалансированное меню на день за 5 секунд</h2>
-            </hgroup>
+{% block title %}Главная - Dieto.log{% endblock %}
+
+{% block content %}
+    <section>
+        <hgroup>
+            <h1>Ваш персональный диетолог</h1>
+            <h2>Сгенерируйте сбалансированное меню на день за 5 секунд</h2>
+        </hgroup>
             
-            <form action="" method="POST">
-                {% csrf_token %}
-                <div class="grid">
-                    <!-- Выпадающий список с диетами -->
-                    <label for="diet">
-                        Выберите диету
-                        <select id="diet" name="diet" required>
-                            {% for diet in diets %}
-                                <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
-                                    {{ diet.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </label>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="grid">
+                <!-- Выпадающий список с диетами -->
+                <label for="diet">
+                    Выберите диету
+                    <select id="diet" name="diet" required>
+                        {% for diet in diets %}
+                            <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
+                                {{ diet.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
                     
-                    <!-- Поле для ввода калорий -->
-                    <label for="calories">
-                        Целевая калорийность (ккал)
-                        <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
-                    </label>
-                </div>
-
-                <button type="submit">Сгенерировать меню!</button>
-            </form>
-
-            {% if error_message %}
-                <article style="background-color: var(--pico-form-element-invalid-background-color); border-color: var(--pico-form-element-invalid-border-color);">
-                    {{ error_message }}
-                </article>
-            {% endif %} 
-
-            {% if nutrition_targets %}
-            <div class="nutrition-targets" style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
-                <hgroup>
-                    <h4>Ваши рекомендуемые цели на день</h4>
-                    <h6>На основе выбранной диеты и калорийности</h6>
-                </hgroup>
-                <ul>
-                    <li>Белки: не менее {{ nutrition_targets.proteins }} г</li>
-                    <li>Жиры: не менее {{ nutrition_targets.fats }} г</li>
-                    <li>Углеводы: {{ nutrition_targets.carb_constraint_text }} {{ nutrition_targets.carbs }} г</li>
-                </ul>
+                <!-- Поле для ввода калорий -->
+                <label for="calories">
+                    Целевая калорийность (ккал)
+                    <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
+                </label>
             </div>
+
+            <button type="submit">Сгенерировать меню!</button>
+        </form>
+
+        {% if error_message %}
+            <article style="background-color: var(--pico-form-element-invalid-background-color); border-color: var(--pico-form-element-invalid-border-color);">
+                {{ error_message }}
+            </article>
+        {% endif %} 
+
+        {% if nutrition_targets %}
+        <div class="nutrition-targets" style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
+            <hgroup>
+                <h4>Ваши рекомендуемые цели на день</h4>
+                <h6>На основе выбранной диеты и калорийности</h6>
+            </hgroup>
+            <ul>
+                <li>Белки: не менее {{ nutrition_targets.proteins }} г</li>
+                <li>Жиры: не менее {{ nutrition_targets.fats }} г</li>
+                <li>Углеводы: {{ nutrition_targets.carb_constraint_text }} {{ nutrition_targets.carbs }} г</li>
+             </ul>
+        </div>
+        {% endif %}
+
+        <!-- ===== БЛОК С РЕЗУЛЬТАТАМИ ===== -->
+        {% if meal_plan %}
+        <hr>
+        <section id="meal-plan-results">
+            <h2>Ваш план питания на день</h2>
+
+            <!-- Завтрак -->
+            {% if meal_plan.breakfast %}
+            <article>
+                <header>
+                    <strong>Завтрак</strong>
+                    <!-- Калорийность на порцию -->
+                    <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving }} ккал</small>
+                </header>
+                <p>{{ meal_plan.breakfast.recipe.name }}</p>
+                <footer>
+                    <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.breakfast.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                </footer>
+            </article>
             {% endif %}
-
-            <!-- ===== БЛОК С РЕЗУЛЬТАТАМИ ===== -->
-            {% if meal_plan %}
-            <hr>
-            <section id="meal-plan-results">
-                <h2>Ваш план питания на день</h2>
-
-                <!-- Завтрак -->
-                {% if meal_plan.breakfast %}
-                <article>
-                    <header>
-                        <strong>Завтрак</strong>
-                        <!-- Калорийность на порцию -->
-                        <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving }} ккал</small>
-                    </header>
-                    <p>{{ meal_plan.breakfast.recipe.name }}</p>
-                    <footer>
-                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.breakfast.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
-                    </footer>
-                </article>
-                {% endif %}
     
-                <!-- Обед -->
-                {% if meal_plan.lunch %}
-                <article>
-                    <header>
-                        <strong>Обед</strong>
-                        <small>~{{ meal_plan.lunch.nutrition.calories_per_serving }} ккал</small>
-                    </header>
-                    <p>{{ meal_plan.lunch.recipe.name }}</p>
-                    <footer>
-                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.lunch.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
-                    </footer>
-                </article>
-                {% endif %}
-
-                <!-- Ужин -->
-                {% if meal_plan.dinner %}
-                <article>
-                    <header>
-                        <strong>Ужин</strong>
-                        <small>~{{ meal_plan.dinner.nutrition.calories_per_serving }} ккал</small>
-                    </header>
-                    <p>{{ meal_plan.dinner.recipe.name }}</p>
-                    <footer>
-                        <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.dinner.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
-                    </footer>
-                </article>
-                {% endif %}
-            </section>
+            <!-- Обед -->
+            {% if meal_plan.lunch %}
+            <article>
+                <header>
+                    <strong>Обед</strong>
+                    <small>~{{ meal_plan.lunch.nutrition.calories_per_serving }} ккал</small>
+                </header>
+                <p>{{ meal_plan.lunch.recipe.name }}</p>
+                <footer>
+                    <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.lunch.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                </footer>
+            </article>
             {% endif %}
-            <!-- ===== КОНЕЦ БЛОКА С РЕЗУЛЬТАТАМИ ===== -->
+
+            <!-- Ужин -->
+            {% if meal_plan.dinner %}
+            <article>
+                <header>
+                    <strong>Ужин</strong>
+                    <small>~{{ meal_plan.dinner.nutrition.calories_per_serving }} ккал</small>
+                </header>
+                <p>{{ meal_plan.dinner.recipe.name }}</p>
+                <footer>
+                    <a href="{% url 'recipes:recipe_detail' recipe_id=meal_plan.dinner.recipe.id %}" role="button" class="secondary">Посмотреть рецепт</a>
+                </footer>
+            </article>
+            {% endif %}
         </section>
-    </main>
-</body>
-</html>
+        {% endif %}
+        <!-- ===== КОНЕЦ БЛОКА С РЕЗУЛЬТАТАМИ ===== -->
+    </section>
+{% endblock %}
