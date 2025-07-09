@@ -3,11 +3,13 @@ from .models import Diet, Recipe
 from .utils import calculate_recipe_nutrition
 from .generator import find_best_meal_plan
 from decimal import Decimal
+from django.db import models
+from django.db.models.functions import Lower
 
 def index(request):
     diets = Diet.objects.all()
     
-    # --- ЭТАП 1: ОПРЕДЕЛЕНИЕ ВХОДНЫХ ПАРАМЕТРОВ ---
+    # --- ОПРЕДЕЛЕНИЕ ВХОДНЫХ ПАРАМЕТРОВ ---
 
     if request.method == 'POST':
         # Если форма отправлена, берем данные из нее
@@ -24,9 +26,8 @@ def index(request):
         selected_diet = diets.first()
         calories_value = selected_diet.default_calories if selected_diet else 2000
 
-    # --- ЭТАП 2: ВЫЧИСЛЕНИЯ И ГЕНЕРАЦИЯ (ТОЛЬКО ДЛЯ POST) ---
+    # --- ВЫЧИСЛЕНИЯ И ГЕНЕРАЦИЯ (ТОЛЬКО ДЛЯ POST) ---
 
-    # Инициализируем переменные, которые могут не создаться
     nutrition_targets = None
     meal_plan = None
     error_message = None
@@ -44,7 +45,6 @@ def index(request):
         
         # Вызываем "умный" генератор
         possible_recipes = Recipe.objects.filter(diets=selected_diet)
-        # Убираем 'carb_constraint_text' перед передачей в генератор, ему это не нужно
         targets_for_generator = nutrition_targets.copy()
         targets_for_generator.pop('carb_constraint_text')
         
@@ -69,7 +69,6 @@ def index(request):
 
 
 def recipe_detail(request, recipe_id):
-    # Эта функция остается без изменений
     recipe = get_object_or_404(Recipe, pk=recipe_id)
     nutrition = calculate_recipe_nutrition(recipe)
     context = {
@@ -79,11 +78,39 @@ def recipe_detail(request, recipe_id):
     return render(request, 'recipes/recipe_detail.html', context)
 
 def recipe_list(request):
-    # Просто получаем все рецепты из базы, отсортированные по имени
     recipes = Recipe.objects.all().order_by('name')
-    
+    diets = Diet.objects.all().order_by('name')
+    meal_types = Recipe.MEAL_TYPE_CHOICES
+
+    # --- ЛОГИКА ФИЛЬТРАЦИИ ---
+    # Получаем параметры из URL
+    selected_diet_id = request.GET.get('diet')
+    selected_meal_type = request.GET.get('meal_type')
+    search_query = request.GET.get('q')
+
+    # Фильтруем по диете, если она выбрана
+    if selected_diet_id and selected_diet_id.isdigit():
+        recipes = recipes.filter(diets__id=selected_diet_id)
+
+    if selected_meal_type:
+        recipes = recipes.filter(meal_type=selected_meal_type)
+
+    # Фильтруем по поисковому запросу, если он есть
+    if search_query:
+        recipes = recipes.filter(
+            models.Q(name__icontains=search_query) | 
+            models.Q(description__icontains=search_query) |
+            models.Q(ingredients__name__icontains=search_query)
+        ).distinct()
+
     context = {
         'recipes': recipes,
+        'diets': diets,
+        'meal_types': meal_types,
+        # Передаем обратно в шаблон, чтобы "запомнить" выбор пользователя
+        'selected_diet_id': int(selected_diet_id) if selected_diet_id and selected_diet_id.isdigit() else None,
+        'selected_meal_type': selected_meal_type,
+        'search_query': search_query,
     }
     
     return render(request, 'recipes/recipe_list.html', context)

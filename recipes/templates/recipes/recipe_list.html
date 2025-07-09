@@ -26,6 +26,34 @@
             <h2>Найдите что-то вкусное и полезное</h2>
         </hgroup>
         
+        <form method="GET" action="{% url 'recipes:recipe_list' %}" class="grid">
+        <!-- Фильтр по диете -->
+            <select name="diet">
+                <option value="">Все диеты</option>
+                {% for diet in diets %}
+                    <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
+                        {{ diet.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- ФИЛЬТР ПО ТИПУ БЛЮДА -->
+            <select name="meal_type">
+                <option value="">Все приемы пищи</option>
+                {% for value, name in meal_types %}
+                    <option value="{{ value }}" {% if value == selected_meal_type %}selected{% endif %}>
+                        {{ name }}
+                    </option>
+                {% endfor %}
+            </select>
+    
+            <!-- Поиск по тексту -->
+            <input type="text" name="q" placeholder="Поиск по названию или описанию..." value="{{ search_query|default:'' }}">
+    
+            <button type="submit">Найти</button>
+        </form>
+        <hr>
+        
         <!-- Используем grid для вывода рецептов в несколько колонок -->
         <div class="card-grid">
             {% for recipe in recipes %}
