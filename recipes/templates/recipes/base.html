@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <title>{% block title %}Dieto.log{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
@@ -12,7 +13,12 @@
     <header class="container">
         <nav class="main-nav">
             <!-- Левая часть: Логотип -->
-            <a href="{% url 'recipes:index' %}" class="nav-logo"><strong>Dieto.log</strong></a>
+            <a href="{% url 'recipes:index' %}" class="nav-logo">
+                <picture>
+                    <source srcset="{% static 'images/logo_dark.png' %}" media="(prefers-color-scheme: dark)">
+                    <img src="{% static 'images/logo_1.png' %}" alt="Dieto.log" style="height: 3rem; width: auto;">
+                </picture>
+            </a>
         
             <!-- Правая часть: Ссылки -->
             <div class="nav-links">
