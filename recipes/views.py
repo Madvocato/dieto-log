@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Diet, Recipe
+from .models import Diet, Recipe, Ingredient
 from .utils import calculate_recipe_nutrition
 from .generator import find_best_meal_plan
 from decimal import Decimal
@@ -83,9 +83,13 @@ def recipe_list(request):
     meal_types = Recipe.MEAL_TYPE_CHOICES
 
     # --- ЛОГИКА ФИЛЬТРАЦИИ ---
+    
     selected_diet_id = request.GET.get('diet')
     selected_meal_type = request.GET.get('meal_type')
+    max_cooking_time = request.GET.get('max_time')
+    included_ingredients = request.GET.getlist('ingredients')
     search_query = request.GET.get('q')
+    
 
     sort_by = request.GET.get('sort', 'name')
 
@@ -95,6 +99,13 @@ def recipe_list(request):
 
     if selected_meal_type:
         recipes = recipes.filter(meal_type=selected_meal_type)
+
+    if max_cooking_time and max_cooking_time.isdigit():
+        recipes = recipes.filter(cooking_time__lte=max_cooking_time)
+
+    if included_ingredients:
+        for ingredient_id in included_ingredients:
+            recipes = recipes.filter(ingredients__id=ingredient_id)
 
     # Фильтруем по поисковому запросу, если он есть
     if search_query:
@@ -118,6 +129,9 @@ def recipe_list(request):
         'selected_meal_type': selected_meal_type,
         'search_query': search_query,
         'current_sort': sort_by,
+        'max_cooking_time': max_cooking_time,
+        'ingredients_all': Ingredient.objects.all(),
+        'selected_ingredients': [int(i) for i in included_ingredients],
     }
     
     return render(request, 'recipes/recipe_list.html', context)

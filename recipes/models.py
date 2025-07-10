@@ -4,7 +4,7 @@ from django.db import models
 class Diet(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название диеты")
     description = models.TextField(blank=True, verbose_name="Описание")
-
+    icon = models.FileField(upload_to='diet_icons/', blank=True, null=True, verbose_name="Иконка")
     default_calories = models.PositiveIntegerField(default=2000, verbose_name="Калории по умолчанию")
     
     # Граничные условия БЖУ

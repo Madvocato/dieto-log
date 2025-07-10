@@ -12,6 +12,7 @@
         
     <form method="GET" action="{% url 'recipes:recipe_list' %}">
         <div class="grid catalog-filters-grid">
+
             <!-- Фильтр по диете -->
             <select name="diet" title="Фильтр по диете">
                 <option value="">Все диеты</option>
@@ -36,7 +37,31 @@
                 <option value="name" {% if current_sort == 'name' %}selected{% endif %}>По названию (А-Я)</option>
                 <option value="cooking_time" {% if current_sort == 'cooking_time' %}selected{% endif %}>По времени</option>
             </select>
-    
+
+            <!-- Фильтр по ингредиентам -->
+            <div class="ingredient-filter">
+                <details role="list">
+                    <summary aria-haspopup="listbox">Выберите ингредиенты</summary>
+                    <ul role="listbox">
+                        {% for ingredient in ingredients_all %}
+                            <li>
+                                <label>
+                                    <input 
+                                        type="checkbox" 
+                                        name="ingredients" 
+                                        value="{{ ingredient.id }}"
+                                        {% if ingredient.id in selected_ingredients %}checked{% endif %}>
+                                    {{ ingredient.name }}   
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </div>
+ 
+            <!-- Поиск по времени -->
+            <input type="number" name="max_time" placeholder="Время до (мин)" value="{{ max_cooking_time|default:'' }}" title="Максимальное время приготовления">
+        
             <!-- Поиск по тексту -->
             <input type="text" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}" title="Поле для поиска">
     
