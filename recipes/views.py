@@ -7,7 +7,12 @@ from django.db import models
 from django.db.models.functions import Lower
 
 def index(request):
-    diets = Diet.objects.all()
+    try:
+        balanced_diet = Diet.objects.get(name="Сбалансированная")
+        other_diets = Diet.objects.exclude(name="Сбалансированная").order_by('name')
+        diets = [balanced_diet] + list(other_diets)
+    except Diet.DoesNotExist:
+        diets = list(Diet.objects.all().order_by('name'))
     
     # --- ОПРЕДЕЛЕНИЕ ВХОДНЫХ ПАРАМЕТРОВ ---
 
@@ -19,11 +24,11 @@ def index(request):
             selected_diet = Diet.objects.get(id=diet_id)
         except (ValueError, TypeError, Diet.DoesNotExist):
             # Если данные кривые, сбрасываем на дефолт
-            selected_diet = diets.first()
+            selected_diet = diets[0] if diets else None
             calories_value = selected_diet.default_calories if selected_diet else 2000
     else:
         # Если страница загружается первый раз (GET), берем дефолтные значения
-        selected_diet = diets.first()
+        selected_diet = diets[0] if diets else None
         calories_value = selected_diet.default_calories if selected_diet else 2000
 
     # --- ВЫЧИСЛЕНИЯ И ГЕНЕРАЦИЯ (ТОЛЬКО ДЛЯ POST) ---
@@ -58,7 +63,7 @@ def index(request):
 
     context = {
         'diets': diets,
-        'selected_diet_id': selected_diet.id if selected_diet else None, # <--- ВОТ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ!
+        'selected_diet': selected_diet if selected_diet else None,
         'calories_value': calories_value,
         'meal_plan': meal_plan,
         'nutrition_targets': nutrition_targets,

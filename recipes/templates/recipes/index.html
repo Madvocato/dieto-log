@@ -11,26 +11,28 @@
             
         <form action="" method="POST">
             {% csrf_token %}
-            <div class="grid">
-                <!-- Выпадающий список с диетами -->
-                <label for="diet">
-                    Выберите диету
-                    <select id="diet" name="diet" required>
-                        {% for diet in diets %}
-                            <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
-                                {{ diet.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </label>
-                    
-                <!-- Поле для ввода калорий -->
-                <label for="calories">
-                    Целевая калорийность (ккал)
-                    <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
-                </label>
-            </div>
+            <fieldset>
+                <legend>Выберите диету</legend>
+                <div class="diet-cards-container">
+                    {% for diet in diets %}
+                        <div class="diet-card">
+                            <input type="radio" name="diet" value="{{ diet.id }}" id="diet-{{ diet.id }}"
+                                {% if diet.id == selected_diet.id %}checked{% endif %}>
+                            <label for="diet-{{ diet.id }}">
+                                {% if diet.icon %}
+                                    <img src="{{ diet.icon.url }}" alt="{{ diet.name }}" class="diet-icon">
+                                {% endif %}
+                                <span>{{ diet.name }}</span>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </fieldset>
 
+            <label for="calories">
+                Целевая калорийность (ккал)
+                <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
+            </label>
             <button type="submit">Сгенерировать меню!</button>
         </form>
 

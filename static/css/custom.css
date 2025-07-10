@@ -75,8 +75,6 @@
     height: 8px;
     border-bottom: 2px solid var(--pico-muted-color);
     border-right: 2px solid var(--pico-muted-color);
-    
-    /* Позиционирование */
     position: absolute;
     top: 50%;
     right: 1rem;
@@ -118,6 +116,74 @@
 
 .ingredient-filter li label:hover {
     background-color: var(--pico-muted-background-color);
+}
+
+.diet-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.diet-card input[type="radio"] {
+    display: none;
+}
+
+.diet-card label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 2px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    height: 100%;
+}
+
+.diet-card .diet-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.75rem;
+}
+
+.diet-card input[type="radio"]:checked + label {
+    border-color: var(--pico-primary);
+    background-color: var(--pico-primary-background);
+    box-shadow: 0 0 0 3px var(--pico-primary-focus);
+}
+
+.diet-card label:hover {
+    border-color: var(--pico-primary-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+    .diet-icon {
+        filter: invert(1) brightness(2);
+    }
+}
+
+
+button,
+input[type="submit"],
+.pico button,
+.pico input[type="submit"] {
+    --pico-background-color: #5cc760 !important;
+    --pico-border-color: #569659 !important;
+}
+
+button:hover,
+input[type="submit"]:hover,
+.pico button:hover,
+.pico input[type="submit"]:hover {
+    --pico-background-color: #429f47 !important;
+}
+
+.diet-card input[type="radio"]:checked + label {
+    border-color: #52b558d6 !important;
+    background-color: rgba(138, 177, 139, 0.1) !important;
+    box-shadow: none !important;
 }
 
 @media (max-width: 968px) {
