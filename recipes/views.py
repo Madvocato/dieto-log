@@ -7,68 +7,85 @@ from django.db import models
 from django.db.models.functions import Lower
 
 def index(request):
+    # --- ЭТАП 1: ПОДГОТОВКА ДАННЫХ ДЛЯ ФОРМЫ ---
     try:
         balanced_diet = Diet.objects.get(name="Сбалансированная")
         other_diets = Diet.objects.exclude(name="Сбалансированная").order_by('name')
-        diets = [balanced_diet] + list(other_diets)
+        all_diets = [balanced_diet] + list(other_diets)
     except Diet.DoesNotExist:
-        diets = list(Diet.objects.all().order_by('name'))
-    
-    # --- ОПРЕДЕЛЕНИЕ ВХОДНЫХ ПАРАМЕТРОВ ---
+        all_diets = list(Diet.objects.all().order_by('name'))
 
-    if request.method == 'POST':
-        # Если форма отправлена, берем данные из нее
-        try:
-            diet_id = int(request.POST.get('diet'))
-            calories_value = int(request.POST.get('calories'))
-            selected_diet = Diet.objects.get(id=diet_id)
-        except (ValueError, TypeError, Diet.DoesNotExist):
-            # Если данные кривые, сбрасываем на дефолт
-            selected_diet = diets[0] if diets else None
-            calories_value = selected_diet.default_calories if selected_diet else 2000
-    else:
-        # Если страница загружается первый раз (GET), берем дефолтные значения
-        selected_diet = diets[0] if diets else None
-        calories_value = selected_diet.default_calories if selected_diet else 2000
-
-    # --- ВЫЧИСЛЕНИЯ И ГЕНЕРАЦИЯ (ТОЛЬКО ДЛЯ POST) ---
-
-    nutrition_targets = None
-    meal_plan = None
-    error_message = None
-
-    if request.method == 'POST' and selected_diet:
-        # Рассчитываем целевые пороги БЖУ
-        calories_factor = Decimal(calories_value) / Decimal(1000.0)
-        nutrition_targets = {
-            'proteins': round(selected_diet.protein_per_1000_kcal * calories_factor),
-            'fats': round(selected_diet.fat_per_1000_kcal * calories_factor),
-            'carbs': round(selected_diet.carb_per_1000_kcal * calories_factor),
-            'carb_constraint_type': selected_diet.carbs_constraint,
-            'carb_constraint_text': selected_diet.get_carbs_constraint_display()
-        }
-        
-        # Вызываем "умный" генератор
-        possible_recipes = Recipe.objects.filter(diets=selected_diet)
-        targets_for_generator = nutrition_targets.copy()
-        targets_for_generator.pop('carb_constraint_text')
-        
-        meal_plan = find_best_meal_plan(possible_recipes, calories_value, targets_for_generator)
-        
-        # Обрабатываем результат генератора
-        if meal_plan is None:
-            error_message = "К сожалению, не удалось составить меню. Попробуйте изменить калорийность или добавить больше рецептов для этой диеты."
-
-    # --- ЭТАП 3: ФОРМИРОВАНИЕ КОНТЕКСТА И ОТПРАВКА ---
-
+    # --- ЭТАП 2: ИНИЦИАЛИЗАЦИЯ КОНТЕКСТА ---
+    # Создаем ОДИН context и сразу кладем в него все, что нужно для отрисовки страницы
     context = {
-        'diets': diets,
-        'selected_diet': selected_diet if selected_diet else None,
-        'calories_value': calories_value,
-        'meal_plan': meal_plan,
-        'nutrition_targets': nutrition_targets,
-        'error_message': error_message,
+        'diets': all_diets,
+        'selected_diet': all_diets[0] if all_diets else None,
+        'calories_value': (all_diets[0].default_calories if all_diets else 2000),
+        'meal_plan': None,
+        'total_nutrition': None,
+        'nutrition_targets': None,
+        'error_message': None,
     }
+
+    # --- ЭТАП 3: ОБРАБОТКА POST-ЗАПРОСА ---
+    if request.method == 'POST':
+        try:
+            # Получаем данные от пользователя
+            diet_id = int(request.POST.get('diet'))
+            target_calories = int(request.POST.get('calories'))
+            selected_diet = Diet.objects.get(id=diet_id)
+            
+            # Обновляем значения в контексте для "запоминания" выбора
+            context['selected_diet'] = selected_diet
+            context['calories_value'] = target_calories
+
+            # Рассчитываем и обновляем в контексте целевые пороги БЖУ
+            calories_factor = Decimal(target_calories) / Decimal(1000)
+            nutrition_targets = {
+                'proteins': round(selected_diet.protein_per_1000_kcal * calories_factor),
+                'fats': round(selected_diet.fat_per_1000_kcal * calories_factor),
+                'carbs': round(selected_diet.carb_per_1000_kcal * calories_factor),
+                'carb_constraint_type': selected_diet.carbs_constraint,
+                'carb_constraint_text': selected_diet.get_carbs_constraint_display()
+            }
+            context['nutrition_targets'] = nutrition_targets
+            
+            # Вызываем генератор
+            possible_recipes = Recipe.objects.filter(diets=selected_diet)
+            targets_for_generator = nutrition_targets.copy()
+            targets_for_generator.pop('carb_constraint_text')
+            meal_plan_raw = find_best_meal_plan(possible_recipes, target_calories, targets_for_generator)
+        
+            # Обрабатываем результат генератора
+            if meal_plan_raw:
+                final_plan_for_template = {}
+                total_nutrition = {'calories': 0, 'proteins': 0, 'fats': 0, 'carbs': 0}
+
+                for meal_type, data in meal_plan_raw.items():
+                    recipe_data = data['recipe_data']
+                    servings = data['servings']
+                    
+                    # Масштабируем КБЖУ на количество порций
+                    nutrition = {key: value * servings for key, value in recipe_data['nutrition'].items() if 'per_serving' in key}
+                    
+                    final_plan_for_template[meal_type] = {
+                        'recipe': recipe_data['recipe'],
+                        'servings': servings,
+                        'nutrition': nutrition,
+                    }
+                    
+                    total_nutrition['calories'] += nutrition['calories_per_serving']
+                    total_nutrition['proteins'] += nutrition['proteins_per_serving']
+                    total_nutrition['fats'] += nutrition['fats_per_serving']
+                    total_nutrition['carbs'] += nutrition['carbs_per_serving']
+                
+                context['meal_plan'] = final_plan_for_template
+                context['total_nutrition'] = total_nutrition
+            else:
+                context['error_message'] = "К сожалению, не удалось составить меню..."
+
+        except (ValueError, TypeError, Diet.DoesNotExist):
+            context['error_message'] = "Произошла ошибка. Пожалуйста, проверьте введенные данные."
     
     return render(request, 'recipes/index.html', context)
 

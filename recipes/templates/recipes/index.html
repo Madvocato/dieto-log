@@ -60,15 +60,21 @@
         {% if meal_plan %}
         <hr>
         <section id="meal-plan-results">
-            <h2>Ваш план питания на день</h2>
+            <hgroup>
+                <h2>Ваш план питания на день</h2>
+                <h4>Итого: ~{{ total_nutrition.calories|floatformat:0 }} ккал (Б: {{ total_nutrition.proteins|floatformat:0 }}г, Ж: {{ total_nutrition.fats|floatformat:0 }}г, У: {{ total_nutrition.carbs|floatformat:0 }}г)</h4>
+            </hgroup>
 
             <!-- Завтрак -->
             {% if meal_plan.breakfast %}
             <article>
                 <header>
                     <strong>Завтрак</strong>
-                    <!-- Калорийность на порцию -->
-                    <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving }} ккал</small>
+                    <!-- Указываем количество порций, если их больше одной -->
+                    {% if meal_plan.breakfast.servings > 1 %}
+                        <small>x {{ meal_plan.breakfast.servings }} порции</small>
+                    {% endif %}
+                    <small>~{{ meal_plan.breakfast.nutrition.calories_per_serving|floatformat:0 }} ккал</small>
                 </header>
                 <p>{{ meal_plan.breakfast.recipe.name }}</p>
                 <footer>
@@ -82,7 +88,10 @@
             <article>
                 <header>
                     <strong>Обед</strong>
-                    <small>~{{ meal_plan.lunch.nutrition.calories_per_serving }} ккал</small>
+                    {% if meal_plan.lunch.servings > 1 %}
+                        <small>x {{ meal_plan.lunch.servings }} порции</small>
+                    {% endif %}
+                    <small>~{{ meal_plan.lunch.nutrition.calories_per_serving|floatformat:0 }} ккал</small>
                 </header>
                 <p>{{ meal_plan.lunch.recipe.name }}</p>
                 <footer>
@@ -96,7 +105,10 @@
             <article>
                 <header>
                     <strong>Ужин</strong>
-                    <small>~{{ meal_plan.dinner.nutrition.calories_per_serving }} ккал</small>
+                    {% if meal_plan.dinner.servings > 1 %}
+                        <small>x {{ meal_plan.dinner.servings }} порции</small>
+                    {% endif %}
+                    <small>~{{ meal_plan.dinner.nutrition.calories_per_serving|floatformat:0 }} ккал</small>
                 </header>
                 <p>{{ meal_plan.dinner.recipe.name }}</p>
                 <footer>
