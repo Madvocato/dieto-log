@@ -48,6 +48,28 @@
     margin-bottom: 2rem;
 }
 
+.card-grid article {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-grid article footer {
+    margin-top: auto;
+}
+
+.recipe-card-description {
+    height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
 .ingredient-filter {
     position: relative;
 }

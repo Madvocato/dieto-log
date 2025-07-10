@@ -83,7 +83,7 @@
                 </header>
                 <h5 style="margin-bottom: 0;">{{ recipe.name }}</h5>
                 <small>Время: {{ recipe.cooking_time }} мин. | Порций: {{ recipe.servings }}</small>
-                <p style="height: 4.5em; overflow: hidden;">{{ recipe.description }}</p>
+                <p class="recipe-card-description">{{ recipe.description }}</p>
                 <footer>
                     <a href="{% url 'recipes:recipe_detail' recipe_id=recipe.id %}" role="button">Подробнее</a>
                 </footer>

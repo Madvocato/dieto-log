@@ -65,6 +65,7 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(verbose_name="Время приготовления (мин)")
     servings = models.PositiveIntegerField(default=1, verbose_name="Количество порций")
     meal_type = models.CharField(max_length=10, choices=MEAL_TYPE_CHOICES, verbose_name="Тип приема пищи")
+    is_simple_ingredient = models.BooleanField(default=False, verbose_name="Это простой продукт (не показывать в каталоге)")
     
     # Связь "многие-ко-многим" с диетами
     diets = models.ManyToManyField(Diet, related_name="recipes", verbose_name="Подходящие диеты")

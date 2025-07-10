@@ -83,7 +83,7 @@ def recipe_detail(request, recipe_id):
     return render(request, 'recipes/recipe_detail.html', context)
 
 def recipe_list(request):
-    recipes = Recipe.objects.all()
+    recipes = Recipe.objects.filter(is_simple_ingredient=False).order_by('name')
     diets = Diet.objects.all().order_by('name')
     meal_types = Recipe.MEAL_TYPE_CHOICES
 
