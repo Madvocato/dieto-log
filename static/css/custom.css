@@ -1,18 +1,40 @@
+/* ==========================================================================
+   1. ГЛОБАЛЬНЫЕ СТИЛИ И ПЕРЕОПРЕДЕЛЕНИЕ PICO.CSS
+   ========================================================================== */
+
+/* Ограничиваем максимальную ширину для удобства на больших экранах */
 main.container, header.container, footer.container {
     max-width: min(100rem, 90vw);
 }
 
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+/* Переопределяем основной зеленый цвет для всех кнопок */
+button,
+input[type="submit"],
+.pico button,
+.pico input[type="submit"] {
+    --pico-background-color: #5cc760 !important;
+    --pico-border-color: #569659 !important;
 }
 
+button:hover,
+input[type="submit"]:hover,
+.pico button:hover,
+.pico input[type="submit"]:hover {
+    --pico-background-color: #429f47 !important;
+}
+
+/* Стили для подвала сайта */
 footer {
     border-top: 1px solid var(--pico-muted-border-color);
     margin-top: 3rem;
     padding-top: 1.5rem !important;
-}   
+}
+
+/* ==========================================================================
+   2. СТИЛИ ДЛЯ КОНКРЕТНЫХ КОМПОНЕНТОВ
+   ========================================================================== */
+
+/* ----------------- Шапка и навигация (.main-nav) ----------------- */
 
 .main-nav {
     display: flex;
@@ -20,7 +42,7 @@ footer {
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid var(--pico-muted-border-color);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     font-size: 1.2rem;
 }
 
@@ -31,13 +53,18 @@ footer {
     font-weight: bold;
 }
 
-.main-nav .nav-logo:hover, 
+.main-nav .nav-links a {
+    margin-left: 1.5rem;
+}
+
 .main-nav .nav-links a:hover {
     color: #5cc760;
 }
 
-.nav-links a {
-    margin-left: 1.5rem;
+.logo-image {
+    height: 3rem;
+    width: auto;
+    vertical-align: middle;
 }
 
 .nav-icon {
@@ -52,136 +79,8 @@ footer {
     filter: invert(65%) sepia(43%) saturate(544%) hue-rotate(71deg) brightness(94%) contrast(91%);
 }
 
-.catalog-filters-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 1rem;
-    align-items: end;
-}
 
-.catalog-filters-grid .ingredient-filter {
-    grid-column: 1 / 3;
-}
-
-.catalog-filters-grid > button {
-    grid-column: 3 / 4;    
-    grid-row: 1 / 4;   
-    
-    height: 93%;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-
-.recipe-header-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.card-grid article {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.card-grid article footer {
-    margin-top: auto;
-}
-
-.card-grid article footer a[role="button"] {
-    background-color: #5cc760;
-    border-color: #569659;
-    color: #ffffff;
-}
-
-.card-grid article footer a[role="button"]:hover {
-    background-color: #429f47;
-    border-color: #3b8a40;
-}
-
-.recipe-card-description {
-    height: 4.5em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    line-clamp: 3;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    font-size: 0.8rem;
-    font-style: italic;
-}
-
-.ingredient-filter {
-    position: relative;
-}
-
-.ingredient-filter summary {
-    border: 1px solid var(--pico-form-element-border-color);
-    border-radius: var(--pico-border-radius);
-    padding: 0.75rem 2.5rem 0.75rem 1rem;
-    cursor: pointer;
-    outline-color: var(--pico-primary-focus);
-    position: relative; 
-    list-style: none;
-}
-
-.ingredient-filter summary::-webkit-details-marker {
-    display: none;
-}
-
-.ingredient-filter summary::after {
-    content: '';
-    display: block;
-    
-    /* Рисуем стрелку с помощью границ */
-    width: 8px;
-    height: 8px;
-    border-bottom: 2px solid var(--pico-muted-color);
-    border-right: 2px solid var(--pico-muted-color);
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    
-    /* Поворот и анимация */
-    transform: translateY(-60%) rotate(45deg);
-    transition: transform 0.2s ease-in-out;
-}
-
-.ingredient-filter[open] > summary::after {
-    transform: translateY(-40%) rotate(-135deg);
-}
-
-.ingredient-filter ul {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    
-    background-color: var(--pico-card-background-color);
-    border: 1px solid var(--pico-form-element-border-color);
-    border-radius: var(--pico-border-radius);
-    margin-top: 0.25rem;
-    
-    max-height: 250px;
-    overflow-y: auto;
-    list-style-type: none;
-    padding: 0.5rem;
-}
-
-.ingredient-filter li label {
-    display: block;
-    padding: 0.25rem 0.5rem;
-    margin-bottom: 0;
-    cursor: pointer;
-    border-radius: var(--pico-border-radius);
-}
-
-.ingredient-filter li label:hover {
-    background-color: var(--pico-muted-background-color);
-}
+/* ----------------- Карточки диет на главной (.diet-card) ----------------- */
 
 .diet-cards-container {
     display: grid;
@@ -207,6 +106,10 @@ footer {
     height: 100%;
 }
 
+.diet-card label:hover {
+    border-color: var(--pico-primary-hover);
+}
+
 .diet-card .diet-icon {
     width: 48px;
     height: 48px;
@@ -214,14 +117,204 @@ footer {
 }
 
 .diet-card input[type="radio"]:checked + label {
-    border-color: var(--pico-primary);
-    background-color: var(--pico-primary-background);
-    box-shadow: 0 0 0 3px var(--pico-primary-focus);
+    border-color: #52b558d6 !important;
+    background-color: rgba(138, 177, 139, 0.1) !important;
+    box-shadow: none !important;
 }
 
-.diet-card label:hover {
-    border-color: var(--pico-primary-hover);
+
+/* ----------------- Форма фильтров в каталоге (.catalog-filters-grid) ----------------- */
+
+.catalog-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 1rem;
+    align-items: end;
 }
+
+.catalog-filters-grid .ingredient-filter {
+    grid-column: 1 / 3;
+}
+
+.catalog-filters-grid > button {
+    grid-column: 3 / 4;    
+    grid-row: 1 / 4;   
+    height: 93%;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+/* Компонент выпадающего списка с чекбоксами */
+.ingredient-filter {
+    position: relative;
+}
+
+.ingredient-filter summary {
+    border: 1px solid var(--pico-form-element-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    cursor: pointer;
+    outline-color: var(--pico-primary-focus);
+    position: relative; 
+    list-style: none;
+}
+
+.ingredient-filter summary::-webkit-details-marker { display: none; }
+
+.ingredient-filter summary::after {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-bottom: 2px solid var(--pico-muted-color);
+    border-right: 2px solid var(--pico-muted-color);
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-60%) rotate(45deg);
+    transition: transform 0.2s ease-in-out;
+}
+
+.ingredient-filter[open] > summary::after {
+    transform: translateY(-40%) rotate(-135deg);
+}
+
+.ingredient-filter ul {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-form-element-border-color);
+    border-radius: var(--pico-border-radius);
+    margin-top: 0.25rem;
+    max-height: 250px;
+    overflow-y: auto;
+    list-style-type: none;
+    padding: 0.5rem;
+}
+
+.ingredient-filter li label {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0;
+    cursor: pointer;
+    border-radius: var(--pico-border-radius);
+}
+
+.ingredient-filter li label:hover {
+    background-color: var(--pico-muted-background-color);
+}
+
+
+/* ----------------- Панель сортировки (.sort-panel) ----------------- */
+
+.sort-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    background-color: var(--pico-muted-background-color);
+    border-radius: var(--pico-border-radius);
+}
+
+.sort-panel span {
+    font-weight: bold;
+    color: var(--pico-secondary-text);
+}
+
+.sort-panel a {
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--pico-border-radius);
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.sort-panel a:hover {
+    background-color: var(--pico-muted-border-color);
+}
+
+.sort-panel a.active {
+    background-color: #5cc760;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+
+/* ----------------- Сетка карточек рецептов (.card-grid) ----------------- */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.card-grid article {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-grid article footer {
+    margin-top: auto;
+}
+
+.card-grid article footer a[role="button"] {
+    background-color: #5cc760;
+    border-color: #569659;
+    color: #ffffff;
+}
+
+.card-grid article footer a[role="button"]:hover {
+    background-color: #429f47;
+    border-color: #3b8a40;
+}
+
+.recipe-card-image {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.recipe-card-description {
+    height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+
+/* ----------------- Страница детального просмотра рецепта ----------------- */
+
+.recipe-header-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.recipe-detail-image {
+    width: 100%;
+    height: auto;
+    border-radius: var(--pico-border-radius);
+    display: block;
+}
+
+.recipe-instructions {
+    margin-top: 1rem;
+}
+
+
+/* ----------------- Блок сгенерированного плана питания (.meal-plan-item) ----------------- */
 
 .meal-plan-item {
     display: flex;
@@ -231,7 +324,6 @@ footer {
     border: 1px solid var(--pico-muted-border-color);
     padding: 1rem;
     border-radius: var(--pico-border-radius);
-    background-color: transparent;
 }
 
 .meal-plan-image img {
@@ -261,141 +353,70 @@ footer {
     margin-top: 1rem;
 }
 
-.meal-plan-content footer a {
-    margin: 0;
+.meal-plan-content footer a { margin: 0; }
+
+
+/* ----------------- Уведомления (.notice) ----------------- */
+
+.notice.error {
+    background-color: var(--pico-form-element-invalid-background-color);
+    border-color: var(--pico-form-element-invalid-border-color);
+    color: var(--pico-form-element-invalid-active-border-color);
 }
 
-
-.sort-controls {
-    grid-column: 1 / -1;
-    margin-bottom: 1rem;
-}
-
-.sort-controls a {
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
+.nutrition-targets {
+    margin-top: 2rem; 
+    padding: 1rem; 
+    border: 1px solid var(--pico-muted-border-color); 
     border-radius: var(--pico-border-radius);
-    text-decoration: none;
 }
 
-.sort-controls a.active {
-    background-color: var(--pico-primary-background);
-    font-weight: bold;
-    color: var(--pico-primary);
-}
 
-.sort-panel {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem; /* Расстояние между элементами */
-    margin-bottom: 1.5rem;
-    padding: 0.5rem;
-    background-color: var(--pico-muted-background-color);
-    border-radius: var(--pico-border-radius);
-    color: #5cc760;
-}
+/* ==========================================================================
+   3. АДАПТИВНОСТЬ (MEDIA QUERIES)
+   ========================================================================== */
 
-.sort-panel span {
-    font-weight: bold;
-}
-
-.sort-panel a {
-    text-decoration: none;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--pico-border-radius);
-    transition: background-color 0.2s ease-in-out;
-    color: #4d7555eb;
-}
-
-.sort-panel a:hover {
-    background-color: var(--pico-muted-border-color);
-}
-
-/* Стиль для активной ссылки остается похожим */
-.sort-panel a.active {
-    background-color: #5cc760;
-    color: #ffffff;
-    font-weight: bold;
-}
-
+/* Переключение на темную тему */
 @media (prefers-color-scheme: dark) {
-    .diet-icon {
+    .diet-icon, .nav-icon {
         filter: invert(1) brightness(2);
     }
-
-    .nav-icon {
-        filter: invert(1) brightness(2);
-    }
-    
 }
 
-
-button,
-input[type="submit"],
-.pico button,
-.pico input[type="submit"] {
-    --pico-background-color: #5cc760 !important;
-    --pico-border-color: #569659 !important;
-}
-
-button:hover,
-input[type="submit"]:hover,
-.pico button:hover,
-.pico input[type="submit"]:hover {
-    --pico-background-color: #429f47 !important;
-}
-
-.diet-card input[type="radio"]:checked + label {
-    border-color: #52b558d6 !important;
-    background-color: rgba(138, 177, 139, 0.1) !important;
-    box-shadow: none !important;
-}
-
+/* Стили для мобильных устройств (планшеты и телефоны) */
 @media (max-width: 768px) {
   
+  /* Перестраиваем сетку фильтров в одну колонку */
   .catalog-filters-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
-
-  .catalog-filters-grid > button {
+  .catalog-filters-grid > button,
+  .catalog-filters-grid .ingredient-filter {
     grid-column: auto;  
     grid-row: auto;
     height: auto;
   }
 
-  .catalog-filters-grid .ingredient-filter {
-      grid-column: auto;
-  }
+  /* Перестраиваем шапку и заголовок рецепта */
+  .main-nav { margin-bottom: 1rem; }
+  .recipe-header-grid { grid-template-columns: 1fr; }
+  .nav-link-text { display: none; }
 
-   .main-nav {
-    margin-bottom: 1rem;
-  }
-
-  .recipe-header-grid {
-    grid-template-columns: 1fr;
-  }
-
-    .nav-link-text {
-      display: none;
-  }
-
+  /* Адаптируем панель сортировки */
   .sort-panel {
         flex-direction: column;
         align-items: stretch;
         background: none;
         padding: 0;
     }
-    .sort-panel-label {
-        display: none;
-    }
-    .sort-panel a {
+  .sort-panel-label { display: none; }
+  .sort-panel a {
         text-align: center;
         padding: 0.75rem;
         border: 1px solid var(--pico-muted-border-color);
         margin-bottom: 0.5rem;
     }
-    .sort-panel a.active {
+  .sort-panel a.active {
         border-color: #5cc760;
         color: #5cc760;
         background-color: transparent;

@@ -4,10 +4,18 @@ from .utils import calculate_recipe_nutrition
 from .generator import find_best_meal_plan
 from decimal import Decimal
 from django.db import models
-from django.db.models.functions import Lower
 
+
+# ==============================================================================
+# View для главной страницы (генератор меню)
+# ==============================================================================
 def index(request):
-    # --- ЭТАП 1: ПОДГОТОВКА ДАННЫХ ДЛЯ ФОРМЫ ---
+    """
+    Отображает главную страницу с формой генерации меню.
+    При POST-запросе обрабатывает данные, запускает генератор и выводит результат.
+    """
+    # Шаг 1: Подготовка данных для формы.
+    # Ставим "Сбалансированную" диету первой в списке для удобства.
     try:
         balanced_diet = Diet.objects.get(name="Сбалансированная")
         other_diets = Diet.objects.exclude(name="Сбалансированная").order_by('name')
@@ -15,8 +23,7 @@ def index(request):
     except Diet.DoesNotExist:
         all_diets = list(Diet.objects.all().order_by('name'))
 
-    # --- ЭТАП 2: ИНИЦИАЛИЗАЦИЯ КОНТЕКСТА ---
-    # Создаем ОДИН context и сразу кладем в него все, что нужно для отрисовки страницы
+    # --- ЭТАП 2: Инициализация контекста для первого захода на страницу (GET) ---
     context = {
         'diets': all_diets,
         'selected_diet': all_diets[0] if all_diets else None,
@@ -32,12 +39,14 @@ def index(request):
         try:
             # Получаем данные от пользователя
             diet_id = int(request.POST.get('diet'))
-            target_calories = int(request.POST.get('calories'))
-            selected_diet = Diet.objects.get(id=diet_id)
+            target_calories = int(request.POST.get('calories', 2000))
+            selected_diet = get_object_or_404(Diet, id=diet_id)
             
-            # Обновляем значения в контексте для "запоминания" выбора
-            context['selected_diet'] = selected_diet
-            context['calories_value'] = target_calories
+            # Обновляем контекст, чтобы "запомнить" выбор пользователя
+            context.update({
+                'selected_diet': selected_diet,
+                'calories_value': target_calories,
+            })
 
             # Рассчитываем и обновляем в контексте целевые пороги БЖУ
             calories_factor = Decimal(target_calories) / Decimal(1000)
@@ -50,13 +59,13 @@ def index(request):
             }
             context['nutrition_targets'] = nutrition_targets
             
-            # Вызываем генератор
+            # Запуск генератора
             possible_recipes = Recipe.objects.filter(diets=selected_diet)
             targets_for_generator = nutrition_targets.copy()
             targets_for_generator.pop('carb_constraint_text')
             meal_plan_raw = find_best_meal_plan(possible_recipes, target_calories, targets_for_generator)
         
-            # Обрабатываем результат генератора
+            # Обработка результата генератора
             if meal_plan_raw:
                 final_plan_for_template = {}
                 total_nutrition = {'calories': 0, 'proteins': 0, 'fats': 0, 'carbs': 0}
@@ -85,12 +94,19 @@ def index(request):
                 context['error_message'] = "К сожалению, не удалось составить меню..."
 
         except (ValueError, TypeError, Diet.DoesNotExist):
-            context['error_message'] = "Произошла ошибка. Пожалуйста, проверьте введенные данные."
+            context['error_message'] = "Произошла ошибка. Пожалуйста, проверьте введенные данные и попробуйте снова."
     
     return render(request, 'recipes/index.html', context)
 
 
+# ==============================================================================
+# View для детальной страницы рецепта
+# ==============================================================================
 def recipe_detail(request, recipe_id):
+    """
+    Отображает страницу с полной информацией о конкретном рецепте,
+    включая ингредиенты, инструкцию и рассчитанный КБЖУ.
+    """
     recipe = get_object_or_404(Recipe, pk=recipe_id)
     nutrition = calculate_recipe_nutrition(recipe)
     context = {
@@ -99,20 +115,28 @@ def recipe_detail(request, recipe_id):
     }
     return render(request, 'recipes/recipe_detail.html', context)
 
+
+# ==============================================================================
+# View для каталога рецептов
+# ==============================================================================
 def recipe_list(request):
-    recipes = Recipe.objects.filter(is_simple_ingredient=False).order_by('name')
+    """
+    Отображает страницу с каталогом всех рецептов.
+    Реализует сложную фильтрацию и сортировку на основе GET-параметров.
+    """
+    recipes = Recipe.objects.filter(is_simple_ingredient=False)
     diets = Diet.objects.all().order_by('name')
     meal_types = Recipe.MEAL_TYPE_CHOICES
 
-    # --- ЛОГИКА ФИЛЬТРАЦИИ ---
-    
+# --- Получаем все GET-параметры из URL для фильтрации и сортировки ---
     selected_diet_id = request.GET.get('diet')
     selected_meal_type = request.GET.get('meal_type')
     max_cooking_time = request.GET.get('max_time')
     included_ingredients = request.GET.getlist('ingredients')
     search_query = request.GET.get('q')
+    sort_by = request.GET.get('sort', 'name') # По умолчанию сортируем по названию
     
-    # Фильтруем по диете, если она выбрана
+    # Последовательно применяем фильтры
     if selected_diet_id and selected_diet_id.isdigit():
         recipes = recipes.filter(diets__id=selected_diet_id)
 
@@ -122,9 +146,11 @@ def recipe_list(request):
     if max_cooking_time and max_cooking_time.isdigit():
         recipes = recipes.filter(cooking_time__lte=max_cooking_time)
 
+    # Фильтр по ингредиентам: рецепт должен содержать КАЖДЫЙ из выбранных ингредиентов.
     if included_ingredients:
         for ingredient_id in included_ingredients:
-            recipes = recipes.filter(ingredients__id=ingredient_id)
+            if ingredient_id.isdigit(): # Добавлена проверка на случай мусора в GET-параметрах
+                recipes = recipes.filter(ingredients__id=ingredient_id)
 
     # Фильтруем по поисковому запросу, если он есть
     if search_query:
@@ -134,39 +160,29 @@ def recipe_list(request):
             models.Q(ingredients__name__icontains=search_query)
         ).distinct()
 
-    sort_by = request.GET.get('sort', 'name')
+    # --- Применяем сортировку ---
     VALID_SORT_FIELDS = ['name', 'cooking_time', 'servings']
-    
-    field_to_sort = sort_by.lstrip('-')
-    if field_to_sort in VALID_SORT_FIELDS:
+
+    # Проверяем, что поле для сортировки (без знака "-") находится в нашем "списке"
+    if sort_by.lstrip('-') in VALID_SORT_FIELDS:
         recipes = recipes.order_by(sort_by)
     else:
-        recipes = recipes.order_by('name')
+        # Если в URL передан невалидный параметр сортировки, применяем сортировку по умолчанию.
         sort_by = 'name'
-
-    SORT_OPTIONS = {
-        'name': 'Название (А-Я)',
-        '-name': 'Название (Я-А)',
-        'cooking_time': 'Время (быстрые)',
-        '-cooking_time': 'Время (долгие)',
-    }
-
-    if field_to_sort not in VALID_SORT_FIELDS:
-        sort_by = 'name'
+        recipes = recipes.order_by(sort_by)
 
     context = {
         'recipes': recipes,
         'diets': diets,
         'meal_types': meal_types,
+        'ingredients_all': Ingredient.objects.all(),
         # Передаем обратно в шаблон, чтобы "запомнить" выбор пользователя
         'selected_diet_id': int(selected_diet_id) if selected_diet_id and selected_diet_id.isdigit() else None,
         'selected_meal_type': selected_meal_type,
         'search_query': search_query,
         'current_sort': sort_by,
-        'sort_options': SORT_OPTIONS,
         'max_cooking_time': max_cooking_time,
-        'ingredients_all': Ingredient.objects.all(),
-        'selected_ingredients': [int(i) for i in included_ingredients],
+        'selected_ingredients': [int(i) for i in included_ingredients if i.isdigit()],
     }
     
     return render(request, 'recipes/recipe_list.html', context)

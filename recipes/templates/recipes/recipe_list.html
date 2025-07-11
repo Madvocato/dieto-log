@@ -2,7 +2,7 @@
 {% load static %}
 {% load recipe_tags %}
 
-{% block title %}Каталог рецептов - Dieto.log{% endblock %}
+{% block title %}Каталог рецептов - Dieto.log{% endblock title %}
 
 {% block content %}
 
@@ -14,17 +14,16 @@
     <form method="GET" action="{% url 'recipes:recipe_list' %}">
         <div class="grid catalog-filters-grid">
 
-            <!-- Фильтр по диете -->
+            {# ----- Блок фильтров ----- #}
             <select name="diet" title="Фильтр по диете">
                 <option value="">Все диеты</option>
-                {% for diet in diets %}
+                    {% for diet in diets %}
                     <option value="{{ diet.id }}" {% if diet.id == selected_diet_id %}selected{% endif %}>
                         {{ diet.name }}
                     </option>
                 {% endfor %}
             </select>
 
-            <!-- ФИЛЬТР ПО ТИПУ БЛЮДА -->
             <select name="meal_type" title="Фильтр по приему пищи">
                 <option value="">Все приемы пищи</option>
                 {% for value, name in meal_types %}
@@ -34,7 +33,6 @@
                 {% endfor %}
             </select>
 
-            <!-- Фильтр по ингредиентам -->
             <div class="ingredient-filter">
                 <details role="list">
                     <summary aria-haspopup="listbox">Выберите ингредиенты</summary>
@@ -54,42 +52,34 @@
                     </ul>
                 </details>
             </div>
- 
-            <!-- Поиск по времени -->
-            <input type="number" name="max_time" placeholder="Время до (мин)" value="{{ max_cooking_time|default:'' }}" title="Максимальное время приготовления">
-        
-            <!-- Поиск по тексту -->
-            <input type="text" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}" title="Поле для поиска">
     
+            <input type="number" name="max_time" placeholder="Время до (мин)" value="{{ max_cooking_time|default:'' }}" title="Максимальное время приготовления">
+            
+            <input type="text" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}" title="Поле для поиска">
+
             <button type="submit">Найти рецепты</button>
         </div>
     </form>
     <hr>
 
+    {# ----- Панель сортировки ----- #}
     <section class="sort-panel">
         <span class="sort-panel-label">Сортировать:</span>
-        <a href="?{% url_transform sort='name' %}" 
-        class="{% if current_sort == 'name' %}active{% endif %}">Название (А-Я)</a>
-        
-        <a href="?{% url_transform sort='-name' %}" 
-        class="{% if current_sort == '-name' %}active{% endif %}">Название (Я-А)</a>
-        
-        <a href="?{% url_transform sort='cooking_time' %}" 
-        class="{% if current_sort == 'cooking_time' %}active{% endif %}">Время (быстрые)</a>
-        
-        <a href="?{% url_transform sort='-cooking_time' %}"
-        class="{% if current_sort == '-cooking_time' %}active{% endif %}">Время (долгие)</a>
+        <a href="?{% url_transform sort='name' %}" class="{% if current_sort == 'name' %}active{% endif %}">Название (А-Я)</a>
+        <a href="?{% url_transform sort='-name' %}" class="{% if current_sort == '-name' %}active{% endif %}">Название (Я-А)</a>
+        <a href="?{% url_transform sort='cooking_time' %}" class="{% if current_sort == 'cooking_time' %}active{% endif %}">Время (быстрые)</a>
+        <a href="?{% url_transform sort='-cooking_time' %}" class="{% if current_sort == '-cooking_time' %}active{% endif %}">Время (долгие)</a>
     </section>
         
-    <!-- Используем grid для вывода рецептов в несколько колонок -->
+    {# ----- Сетка с карточками рецептов ----- #}
     <div class="card-grid">
         {% for recipe in recipes %}
             <article>
                 <header>
                     {% if recipe.image %}
-                        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="height: 200px; width: 100%; max-width: 80vw; object-fit: cover;">
+                        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" class="recipe-card-image">
                     {% else %}
-                        <img src="{% static 'images/placeholder.png' %}" alt="Нет изображения" style="height: 200px; width: 100%; object-fit: cover;">
+                        <img src="{% static 'images/placeholder.png' %}" alt="Нет изображения" class="recipe-card-image">
                     {% endif %}
                 </header>
                 <h5 style="margin-bottom: 0;">{{ recipe.name }}</h5>
@@ -104,4 +94,4 @@
         {% endfor %}
     </div>
 
-{% endblock %}
+{% endblock content %}

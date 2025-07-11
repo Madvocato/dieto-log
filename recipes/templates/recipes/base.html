@@ -5,18 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
-    <title>{% block title %}Dieto.log{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+
+    <title>{% block title %}Dieto.log{% endblock title %}</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/pico.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
 </head>
 <body>
+
+    <!-- ================= Шапка сайта ================= -->
     <header class="container">
         <nav class="main-nav">
             <!-- Левая часть: Логотип -->
             <a href="{% url 'recipes:index' %}" class="nav-logo">
                 <picture>
                     <source srcset="{% static 'images/logo_dark.png' %}" media="(prefers-color-scheme: dark)">
-                    <img src="{% static 'images/logo.png' %}" alt="Dieto.log" style="height: 3rem; width: auto;">
+                    <img src="{% static 'images/logo.png' %}" alt="Dieto.log" class="logo-image">
                 </picture>
             </a>
         
@@ -29,15 +33,20 @@
             </div>
         </nav>
     </header>
+    <!-- ================= Конец шапки ================= -->
 
+    <!-- ================= Основной контент страницы ================= -->
     <main class="container">
         {% block content %}
         {% endblock %}
     </main>
+    <!-- ================= Конец основного контента ================= -->
 
+    <!-- ================= Подвал сайта ================= -->
     <footer class="container">
         <small>Учебный проект, 2025</small>
     </footer>
+    <!-- ================= Конец подвала ================= -->
 
 </body>
 </html>

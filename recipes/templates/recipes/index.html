@@ -1,7 +1,7 @@
 {% extends "recipes/base.html" %}
 {% load static %}
 
-{% block title %}Главная - Dieto.log{% endblock %}
+{% block title %}Главная - Dieto.log{% endblock title %}
 
 {% block content %}
     <section>
@@ -10,7 +10,7 @@
             <h2>Сгенерируйте сбалансированное меню на день за 5 секунд</h2>
         </hgroup>
             
-        <form action="" method="POST">
+        <form action="{% url 'recipes:index' %}" method="POST">
             {% csrf_token %}
             <fieldset>
                 <legend>Выберите диету</legend>
@@ -23,14 +23,14 @@
                                 {% if diet.icon %}
                                     <img src="{{ diet.icon.url }}" alt="{{ diet.name }}" class="diet-icon">
                                 {% endif %}
-                                <span style="font-size: min(1.3vw, 175%);">{{ diet.name }}</span>
+                                <span style="font-size: min(1.3vw, 1em);">{{ diet.name }}</span>
                             </label>
                         </div>
                     {% endfor %}
                 </div>
             </fieldset>
 
-            <label for="calories">
+            <label for="calories">  
                 Целевая калорийность (ккал)
                 <input type="number" id="calories" name="calories" value="{{ calories_value }}" required>
             </label>
@@ -38,13 +38,13 @@
         </form>
 
         {% if error_message %}
-            <article style="background-color: var(--pico-form-element-invalid-background-color); border-color: var(--pico-form-element-invalid-border-color);">
+            <article class="notice error">
                 {{ error_message }}
             </article>
         {% endif %} 
 
         {% if nutrition_targets %}
-        <div class="nutrition-targets" style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
+        <div class="nutrition-targets">
             <hgroup>
                 <h4>Ваши рекомендуемые цели на день</h4>
                 <h6>На основе выбранной диеты и калорийности</h6>
@@ -57,7 +57,7 @@
         </div>
         {% endif %}
 
-        <!-- ===== БЛОК С РЕЗУЛЬТАТАМИ ===== -->
+        {# Блок с результатами генерации плана питания #}
         {% if meal_plan %}
         <hr>
         <section id="meal-plan-results">
@@ -68,8 +68,6 @@
             
             {% for meal_type, data in meal_plan.items %}
             <article class="meal-plan-item">
-                
-                <!-- Картинка слева -->
                 <div class="meal-plan-image">
                     <a href="{% url 'recipes:recipe_detail' recipe_id=data.recipe.id %}">
                         {% if data.recipe.image %}
@@ -80,11 +78,9 @@
                     </a>
                 </div>
                 
-                <!-- Контент справа -->
                 <div class="meal-plan-content">
                     <header>
                         <strong>{{ data.recipe.get_meal_type_display }}</strong>
-                        
                         <div>
                             {% if data.servings > 1 %}
                                 <small>x {{ data.servings }} порции   |   </small>
@@ -99,11 +95,8 @@
                         <a href="{% url 'recipes:recipe_detail' recipe_id=data.recipe.id %}" role="button" class="contrast">Как готовить</a>
                     </footer>
                 </div>
-
             </article>
             {% endfor %}
-
         </section>
         {% endif %}
-
 {% endblock %}

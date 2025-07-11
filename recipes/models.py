@@ -1,11 +1,20 @@
 from django.db import models
 
+# ==============================================================================
 # Модель 1: Диета (Кето, Веган и т.д.)
+# ==============================================================================
 class Diet(models.Model):
+    """
+    Представляет собой конкретную систему питания (диету) с ее правилами и ограничениями.
+    """
     name = models.CharField(max_length=100, unique=True, verbose_name="Название диеты")
     description = models.TextField(blank=True, verbose_name="Описание")
     icon = models.FileField(upload_to='diet_icons/', blank=True, null=True, verbose_name="Иконка")
-    default_calories = models.PositiveIntegerField(default=2000, verbose_name="Калории по умолчанию")
+    default_calories = models.PositiveIntegerField(
+        default=2000, 
+        verbose_name="Калории по умолчанию",
+        help_text="Рекомендуемая калорийность для этой диеты, если пользователь не указал свою."
+    )
     
     # Граничные условия БЖУ
     protein_per_1000_kcal = models.PositiveIntegerField(default=45, verbose_name="Белки (г на 1000 ккал)")
@@ -33,8 +42,13 @@ class Diet(models.Model):
         ordering = ['id']
 
 
+# ==============================================================================
 # Модель 2: Ингредиент (с его КБЖУ на 100г)
+# ==============================================================================
 class Ingredient(models.Model):
+    """
+    Представляет собой базовый продукт питания с его пищевой ценностью.
+    """
     name = models.CharField(max_length=100, unique=True, verbose_name="Название ингредиента")
     calories = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Калории (на 100г)")
     proteins = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Белки (на 100г)")
@@ -50,8 +64,13 @@ class Ingredient(models.Model):
         ordering = ['name']
 
 
+# ==============================================================================
 # Модель 3: Рецепт (основная сущность)
+# ==============================================================================
 class Recipe(models.Model):
+    """
+    Основная модель, представляющая собой рецепт блюда.
+    """
     MEAL_TYPE_CHOICES = [
         ('BREAKFAST', 'Завтрак'),
         ('LUNCH', 'Обед'),
@@ -65,7 +84,11 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(verbose_name="Время приготовления (мин)")
     servings = models.PositiveIntegerField(default=1, verbose_name="Количество порций")
     meal_type = models.CharField(max_length=10, choices=MEAL_TYPE_CHOICES, verbose_name="Тип приема пищи")
-    is_simple_ingredient = models.BooleanField(default=False, verbose_name="Это простой продукт (не показывать в каталоге)")
+    is_simple_ingredient = models.BooleanField(
+        default=False, 
+        verbose_name="Это простой продукт (не показывать в каталоге)",
+        help_text="Отметьте, если это базовый продукт (например, 'Банан'), чтобы не показывать его в общем каталоге."
+    )
     
     # Связь "многие-ко-многим" с диетами
     diets = models.ManyToManyField(Diet, related_name="recipes", verbose_name="Подходящие диеты")
@@ -82,16 +105,28 @@ class Recipe(models.Model):
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
 
+# ==============================================================================
 # Модель 4: Связующая таблица для Рецептов и Ингредиентов
+# ==============================================================================
 class RecipeIngredient(models.Model):
+    """
+    Промежуточная модель для связи Recipe и Ingredient.
+    Позволяет указать точное количество каждого ингредиента в конкретном рецепте.
+    """
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент")
     # Скрытое от пользователей поле веса (для расчетов КБЖУ).
     weight_grams = models.PositiveIntegerField(verbose_name="Вес для расчетов (в граммах)")
 
     # Поля для для отображения в списке ингредиентов
-    display_amount = models.CharField(max_length=50, verbose_name="Количество (отображаемое)") 
-    display_unit = models.CharField(max_length=50, verbose_name="Единица изм. (отображаемая)")
+    display_amount = models.CharField(
+        max_length=50, 
+        verbose_name="Количество (отображаемое)",
+        help_text="Например: '1', '0.5', '2-3'") 
+    display_unit = models.CharField(
+        max_length=50, 
+        verbose_name="Единица изм. (отображаемая)",
+        help_text="Например: 'шт.', 'стакан', 'ст.л.'")
 
     def __str__(self):
         return f"{self.recipe.name} - {self.ingredient.name} ({self.weight_grams}г)"
