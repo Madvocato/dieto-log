@@ -112,9 +112,6 @@ def recipe_list(request):
     included_ingredients = request.GET.getlist('ingredients')
     search_query = request.GET.get('q')
     
-
-    sort_by = request.GET.get('sort', 'name')
-
     # Фильтруем по диете, если она выбрана
     if selected_diet_id and selected_diet_id.isdigit():
         recipes = recipes.filter(diets__id=selected_diet_id)
@@ -137,10 +134,25 @@ def recipe_list(request):
             models.Q(ingredients__name__icontains=search_query)
         ).distinct()
 
-    if sort_by in ['name', 'cooking_time', 'servings']: # Проверка на допустимые значения
+    sort_by = request.GET.get('sort', 'name')
+    VALID_SORT_FIELDS = ['name', 'cooking_time', 'servings']
+    
+    field_to_sort = sort_by.lstrip('-')
+    if field_to_sort in VALID_SORT_FIELDS:
         recipes = recipes.order_by(sort_by)
     else:
         recipes = recipes.order_by('name')
+        sort_by = 'name'
+
+    SORT_OPTIONS = {
+        'name': 'Название (А-Я)',
+        '-name': 'Название (Я-А)',
+        'cooking_time': 'Время (быстрые)',
+        '-cooking_time': 'Время (долгие)',
+    }
+
+    if field_to_sort not in VALID_SORT_FIELDS:
+        sort_by = 'name'
 
     context = {
         'recipes': recipes,
@@ -151,6 +163,7 @@ def recipe_list(request):
         'selected_meal_type': selected_meal_type,
         'search_query': search_query,
         'current_sort': sort_by,
+        'sort_options': SORT_OPTIONS,
         'max_cooking_time': max_cooking_time,
         'ingredients_all': Ingredient.objects.all(),
         'selected_ingredients': [int(i) for i in included_ingredients],

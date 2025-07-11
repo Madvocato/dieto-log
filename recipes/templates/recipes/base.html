@@ -22,7 +22,10 @@
         
             <!-- Правая часть: Ссылки -->
             <div class="nav-links">
-                <a href="{% url 'recipes:recipe_list' %}">Все рецепты</a>
+                <a href="{% url 'recipes:recipe_list' %}">
+                    <img src="{% static 'images/magic.png' %}" alt="" class="nav-icon">
+                    <span class="nav-link-text">Все рецепты</span>
+                </a>
             </div>
         </nav>
     </header>
@@ -35,5 +38,6 @@
     <footer class="container">
         <small>Учебный проект, 2025</small>
     </footer>
+
 </body>
 </html>

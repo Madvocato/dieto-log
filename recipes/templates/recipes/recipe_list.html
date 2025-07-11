@@ -1,5 +1,6 @@
 {% extends "recipes/base.html" %}
 {% load static %}
+{% load recipe_tags %}
 
 {% block title %}Каталог рецептов - Dieto.log{% endblock %}
 
@@ -33,11 +34,6 @@
                 {% endfor %}
             </select>
 
-            <select name="sort" title="Сортировка">
-                <option value="name" {% if current_sort == 'name' %}selected{% endif %}>По названию (А-Я)</option>
-                <option value="cooking_time" {% if current_sort == 'cooking_time' %}selected{% endif %}>По времени</option>
-            </select>
-
             <!-- Фильтр по ингредиентам -->
             <div class="ingredient-filter">
                 <details role="list">
@@ -65,10 +61,25 @@
             <!-- Поиск по тексту -->
             <input type="text" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}" title="Поле для поиска">
     
-            <button type="submit">Применить</button>
+            <button type="submit">Найти рецепты</button>
         </div>
     </form>
     <hr>
+
+    <section class="sort-panel">
+        <span class="sort-panel-label">Сортировать:</span>
+        <a href="?{% url_transform sort='name' %}" 
+        class="{% if current_sort == 'name' %}active{% endif %}">Название (А-Я)</a>
+        
+        <a href="?{% url_transform sort='-name' %}" 
+        class="{% if current_sort == '-name' %}active{% endif %}">Название (Я-А)</a>
+        
+        <a href="?{% url_transform sort='cooking_time' %}" 
+        class="{% if current_sort == 'cooking_time' %}active{% endif %}">Время (быстрые)</a>
+        
+        <a href="?{% url_transform sort='-cooking_time' %}"
+        class="{% if current_sort == '-cooking_time' %}active{% endif %}">Время (долгие)</a>
+    </section>
         
     <!-- Используем grid для вывода рецептов в несколько колонок -->
     <div class="card-grid">
@@ -76,7 +87,7 @@
             <article>
                 <header>
                     {% if recipe.image %}
-                        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="height: 200px; width: 100%; object-fit: cover;">
+                        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" style="height: 200px; width: 100%; max-width: 80vw; object-fit: cover;">
                     {% else %}
                         <img src="{% static 'images/placeholder.png' %}" alt="Нет изображения" style="height: 200px; width: 100%; object-fit: cover;">
                     {% endif %}
